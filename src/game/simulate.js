@@ -10,6 +10,7 @@ import { CONFIG } from './config.js'
 import { getGenre, HOME_GENRE_BONUS } from './genres.js'
 import { PLATFORM_SPLIT } from './config.js'
 import { getMarketing } from './marketing.js'
+import { weeklyExpenses, downgradeOnce, maxEnergyFor } from './lifestyle.js'
 
 // How many streams a song pulls in its very first week.
 export function firstWeekStreams(song, player) {
@@ -131,8 +132,26 @@ export function advanceWeek(game) {
     year += 1
   }
 
+  // --- the weekly bill ------------------------------------------------------
+  // Everything you've bought on the LIFESTYLE screen charges every week, on
+  // top of a flat base cost of living. If you can't cover it, your lifestyle
+  // gets downgraded a step at a time until you can.
+  let lifestyle = player.lifestyle
+  let expenses = CONFIG.BASE_WEEKLY_EXPENSE + weeklyExpenses(lifestyle)
+  const cashBefore = player.cash + earned + wages
+  const downgrades = []
+
+  while (expenses > cashBefore) {
+    const result = downgradeOnce(lifestyle)
+    if (!result.downgraded) break // nothing left to sell; you go into the red
+    lifestyle = result.lifestyle
+    downgrades.push(result.downgraded)
+    expenses = CONFIG.BASE_WEEKLY_EXPENSE + weeklyExpenses(lifestyle)
+  }
+
   // A job you're still working eats part of next week's energy.
-  const energy = Math.max(0, CONFIG.MAX_ENERGY - (job ? job.energy : 0))
+  const maxEnergy = maxEnergyFor({ ...player, lifestyle })
+  const energy = Math.max(0, maxEnergy - (job ? job.energy : 0))
 
   const nextState = {
     ...game,
@@ -142,9 +161,10 @@ export function advanceWeek(game) {
     job,
     player: {
       ...player,
-      cash: player.cash + earned + wages,
+      cash: cashBefore - expenses,
       energy,
       fame,
+      lifestyle,
       totalStreams: player.totalStreams + weekStreams,
       totalEarned: player.totalEarned + earned + wages,
     },
@@ -156,6 +176,8 @@ export function advanceWeek(game) {
     streams: weekStreams,
     earned,
     wages,
+    expenses,
+    downgrades,
     jobName: game.job ? game.job.name : null,
     jobEnded: Boolean(game.job) && !job,
     fameGain: fameGain - CONFIG.FAME_DECAY_PER_WEEK,

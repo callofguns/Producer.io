@@ -7,6 +7,7 @@ import { CONFIG } from './config.js'
 import { rollQuality, rollVirality, polishCost } from './quality.js'
 import { getMarketing } from './marketing.js'
 import { rollJobBoard } from './jobs.js'
+import { getCategory, getTier } from './lifestyle.js'
 import { trainCost, getTrait } from './traits.js'
 
 let idCounter = 0
@@ -29,6 +30,8 @@ export function createNewGame({ name, genreId }) {
       fame: CONFIG.START_FAME,
       traits: { ...CONFIG.START_TRAITS },
       homeStudioRating: CONFIG.START_HOME_STUDIO_RATING,
+      // One chosen tier per spending category; null means you own nothing there.
+      lifestyle: { food: null, fashion: null, health: null, home: null },
       totalStreams: 0,
       totalEarned: 0,
     },
@@ -92,7 +95,12 @@ export function migrate(game) {
     songs,
     job: game.job ?? null,
     jobBoard: game.jobBoard?.length ? game.jobBoard : rollJobBoard(),
-    player: { ...rest, traits, homeStudioRating },
+    player: {
+      ...rest,
+      traits,
+      homeStudioRating,
+      lifestyle: p.lifestyle ?? { food: null, fashion: null, health: null, home: null },
+    },
   }
 }
 
@@ -303,4 +311,44 @@ export function acceptJob(game, jobId) {
 // Walk away from a contract early. Costs nothing but the wage.
 export function quitJob(game) {
   return { game: { ...game, job: null } }
+}
+
+// ---------------------------------------------------------------------------
+// Lifestyle
+// ---------------------------------------------------------------------------
+
+// Buy a tier in a category. You pay the first week straight away, so you can't
+// pick something up for free and cancel it before the bill lands.
+export function setLifestyle(game, categoryId, tierId) {
+  const cat = getCategory(categoryId)
+  if (!cat) return { error: 'Unknown category.' }
+
+  const tier = getTier(categoryId, tierId)
+  if (!tier) return { error: 'Unknown tier.' }
+  if (game.player.lifestyle[categoryId] === tierId) return { error: 'Already yours.' }
+  if (!canAfford(game, tier.cost)) return { error: 'Not enough cash.' }
+
+  return {
+    game: {
+      ...game,
+      player: {
+        ...game.player,
+        cash: game.player.cash - tier.cost,
+        lifestyle: { ...game.player.lifestyle, [categoryId]: tierId },
+      },
+    },
+  }
+}
+
+// Stop paying for a category entirely.
+export function clearLifestyle(game, categoryId) {
+  return {
+    game: {
+      ...game,
+      player: {
+        ...game.player,
+        lifestyle: { ...game.player.lifestyle, [categoryId]: null },
+      },
+    },
+  }
 }

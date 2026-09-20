@@ -16,6 +16,7 @@
 // ============================================================================
 
 import { CONFIG } from './config.js'
+import { viralityBonus } from './lifestyle.js'
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n))
@@ -81,7 +82,10 @@ export function qualityColor(q) {
 export function rollVirality(player, rng = Math.random) {
   const base = player.traits.virality
   const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
-  return clamp(Math.round(base * luck * 10) / 10, 1, CONFIG.MAX_QUALITY)
+  // Your FASHION tier adds a flat bonus on top — "your style gives virality
+  // bonuses".
+  const styled = base * luck + viralityBonus(player.lifestyle)
+  return clamp(Math.round(styled * 10) / 10, 1, CONFIG.MAX_QUALITY)
 }
 
 // What it costs, in energy, to nudge a song's stat up by POLISH_STEP.

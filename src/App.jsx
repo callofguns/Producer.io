@@ -13,6 +13,7 @@ import TraitsScreen from './screens/TraitsScreen.jsx'
 import SongDetailScreen from './screens/SongDetailScreen.jsx'
 import LifestyleScreen from './screens/LifestyleScreen.jsx'
 import JobBoardScreen from './screens/JobBoardScreen.jsx'
+import LifestyleCategoryScreen from './screens/LifestyleCategoryScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
 import {
@@ -25,6 +26,8 @@ import {
   refreshJobBoard,
   acceptJob,
   quitJob,
+  setLifestyle,
+  clearLifestyle,
 } from './game/state.js'
 import { advanceWeek } from './game/simulate.js'
 import { loadGame, saveGame, clearSave } from './game/save.js'
@@ -38,6 +41,7 @@ export default function App() {
   const [openSongId, setOpenSongId] = useState(null) // which song's page is open
   const [report, setReport] = useState(null)        // week summary popup
   const [jobBoardOpen, setJobBoardOpen] = useState(false)
+  const [openCategory, setOpenCategory] = useState(null)
 
   // Autosave: any time the game changes, write it to localStorage.
   useEffect(() => {
@@ -103,6 +107,15 @@ export default function App() {
     setGame(quitJob(game).game)
   }
 
+  function handlePickLifestyle(categoryId, tierId) {
+    const result = setLifestyle(game, categoryId, tierId)
+    if (!result.error) setGame(result.game)
+  }
+
+  function handleClearLifestyle(categoryId) {
+    setGame(clearLifestyle(game, categoryId).game)
+  }
+
   function handleEndWeek() {
     const { nextState, report: r } = advanceWeek(game)
     setGame(nextState)
@@ -116,6 +129,7 @@ export default function App() {
     setCreating(false)
     setOpenSongId(null)
     setJobBoardOpen(false)
+    setOpenCategory(null)
   }
 
   function handleImport(file) {
@@ -146,7 +160,9 @@ export default function App() {
       ? `song-${openSong.id}`
       : jobBoardOpen
         ? 'jobs'
-        : tab
+        : openCategory
+          ? `cat-${openCategory}`
+          : tab
 
   return (
     <PhoneFrame>
@@ -187,11 +203,20 @@ export default function App() {
                   if (!r.error) setGame(r.game)
                 }}
               />
+            ) : openCategory ? (
+              <LifestyleCategoryScreen
+                game={game}
+                categoryId={openCategory}
+                onBack={() => setOpenCategory(null)}
+                onPick={handlePickLifestyle}
+                onClear={handleClearLifestyle}
+              />
             ) : tab === 'home' ? (
               <LifestyleScreen
                 game={game}
                 onFindJob={handleFindJob}
                 onQuitJob={handleQuitJob}
+                onOpenCategory={setOpenCategory}
               />
             ) : tab === 'traits' ? (
               <TraitsScreen game={game} onTrain={handleTrain} />
@@ -214,6 +239,7 @@ export default function App() {
           setCreating(false)
           setOpenSongId(null)
           setJobBoardOpen(false)
+          setOpenCategory(null)
           setTab(t)
         }}
       />

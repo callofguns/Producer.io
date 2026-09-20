@@ -82,9 +82,22 @@ its energy off your weekly total for the length of the contract — so early on
 the wage is worth it, and later the energy is worth more than the money.
 Refreshing the board costs the same ⚡5.
 
-The six spending categories (Food, Fashion, Health, Home, Relationships,
-Transportation) are drawn but switched off. Spending more on them will raise
-your maximum energy, which is what makes the top of each trait reachable.
+**Spending categories.** You pick one tier per category and it bills every
+week, forever, until you change or clear it. A flat $50/week base cost applies
+even with nothing bought.
+
+| Category | What it gives | Top tier |
+| --- | --- | --- |
+| Food | max energy | House Chef, +10 for $1,500/wk |
+| Health | max energy | Celebrity Trainer, +8 for $500/wk |
+| Home | max energy | Private Chateau, +25 for $10,000/wk |
+| Fashion | song virality | Celebrity Stylist, +5 for $5,000/wk |
+
+Maxing all three energy categories takes you from 100 to **143** energy a week.
+Relationships and Transportation are drawn but not built yet.
+
+**If you can't pay**, your lifestyle is automatically downgraded one step at a
+time — most expensive first — until the bill fits what you have.
 
 ## Not built yet
 

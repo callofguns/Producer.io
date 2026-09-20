@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Bolt } from './icons.jsx'
 import { money } from '../game/format.js'
-import { CONFIG } from '../game/config.js'
+import { maxEnergyFor } from '../game/lifestyle.js'
 import { SPRING, tap } from './motion.js'
 
 // The dark bar at the very top: cash, energy, END WEEK, and the date.
@@ -33,7 +33,7 @@ export default function TopBar({ game, onEndWeek, busy }) {
           <Bolt size={17} />
           <span>{energy}</span>
           <span className="sep">|</span>
-          <span>{CONFIG.MAX_ENERGY}</span>
+          <span>{maxEnergyFor(game.player)}</span>
         </motion.div>
       </div>
 

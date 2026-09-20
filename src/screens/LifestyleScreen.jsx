@@ -1,14 +1,11 @@
 import { motion } from 'framer-motion'
 import { Bolt } from '../ui/icons.jsx'
 import { CONFIG } from '../game/config.js'
-import { money } from '../game/format.js'
+import { LIFESTYLE, LOCKED_CATEGORIES, weeklyExpenses, getTier } from '../game/lifestyle.js'
+import { money, moneyExact } from '../game/format.js'
 import { SPRING, tap, tapSmall, listContainer, listItem } from '../ui/motion.js'
 
-// The categories you'll be able to spend on. Only FIND A JOB works so far —
-// the rest are drawn but switched off until their upgrade ladders are in.
-const CATEGORIES = ['FOOD', 'FASHION', 'HEALTH', 'HOME', 'RELATIONSHIPS', 'TRANSPORTATION']
-
-export default function LifestyleScreen({ game, onFindJob, onQuitJob }) {
+export default function LifestyleScreen({ game, onFindJob, onQuitJob, onOpenCategory }) {
   const job = game.job
   const canLook = game.player.energy >= CONFIG.ENERGY_TO_FIND_JOB
 
@@ -19,6 +16,11 @@ export default function LifestyleScreen({ game, onFindJob, onQuitJob }) {
           VIEW EXPENSES
         </motion.div>
         <div className="screen-title">LIFESTYLE</div>
+      </div>
+
+      <div className="expense-line" style={{ marginTop: -6 }}>
+        Weekly Expenses:{' '}
+        {moneyExact(CONFIG.BASE_WEEKLY_EXPENSE + weeklyExpenses(game.player.lifestyle))}
       </div>
 
       {/* --- the job you're working right now --- */}
@@ -64,19 +66,32 @@ export default function LifestyleScreen({ game, onFindJob, onQuitJob }) {
           </span>
         </motion.button>
 
-        {CATEGORIES.map((label) => (
+        {LIFESTYLE.map((cat) => {
+          const tier = getTier(cat.id, game.player.lifestyle[cat.id])
+          return (
+            <motion.button
+              className="row"
+              key={cat.id}
+              variants={listItem}
+              whileTap={tapSmall}
+              onClick={() => onOpenCategory(cat.id)}
+            >
+              <span className="row-label">{cat.name}</span>
+              <span className="row-actions">
+                {tier && <span className="owned-tag">{tier.name}</span>}
+                <span className="circle-btn">→</span>
+              </span>
+            </motion.button>
+          )
+        })}
+
+        {LOCKED_CATEGORIES.map((label) => (
           <motion.div className="row" key={label} variants={listItem} style={{ opacity: 0.38 }}>
             <span className="row-label">{label}</span>
             <span className="circle-btn">→</span>
           </motion.div>
         ))}
       </motion.div>
-
-      <div className="cash-note" style={{ marginTop: 18, lineHeight: 1.6 }}>
-        Spending more on your lifestyle will raise your weekly energy.
-        <br />
-        Not built yet.
-      </div>
     </div>
   )
 }

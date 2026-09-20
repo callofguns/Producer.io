@@ -26,6 +26,9 @@ export const CONFIG = {
 
   // --- Lifestyle & jobs -----------------------------------------------------
   ENERGY_TO_FIND_JOB: 5,   // matches the "FIND A JOB ⚡5" row
+  // You're billed this every week even with nothing bought — the reference
+  // game shows "Weekly Expenses: $50" on a fresh save.
+  BASE_WEEKLY_EXPENSE: 50,
 
   // --- Money ----------------------------------------------------------------
   START_CASH: 0,
