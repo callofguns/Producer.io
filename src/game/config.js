@@ -12,6 +12,16 @@ export const CONFIG = {
   // --- Energy ---------------------------------------------------------------
   MAX_ENERGY: 100,          // the "100 | 100" in the top bar
   ENERGY_PER_SONG: 10,      // matches the "CREATE 10 ⚡" button
+  ENERGY_PER_RELEASE: 10,   // matches the "RELEASE 10 ⚡" button on a song
+
+  // --- Polishing a song -----------------------------------------------------
+  // On an unreleased song you can spend energy to nudge its Production Rating
+  // or Virality up by +0.5 at a time. The price climbs as the stat climbs:
+  //   cost = POLISH_BASE + (current stat / 2)
+  // which lands on ⚡17 around a stat of 14, matching the reference footage.
+  POLISH_STEP: 0.5,
+  POLISH_BASE: 10,
+  POLISH_SCALE: 0.5,
   // Energy refills completely every time you press END WEEK.
 
   // --- Money ----------------------------------------------------------------

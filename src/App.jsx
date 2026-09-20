@@ -4,15 +4,23 @@ import { AnimatePresence, motion } from 'framer-motion'
 import PhoneFrame from './ui/PhoneFrame.jsx'
 import TopBar from './ui/TopBar.jsx'
 import BottomNav from './ui/BottomNav.jsx'
-import { SongResultModal, WeekReportModal } from './ui/Modals.jsx'
+import { WeekReportModal } from './ui/Modals.jsx'
 
 import SetupScreen from './screens/SetupScreen.jsx'
 import MusicScreen from './screens/MusicScreen.jsx'
 import CreateSongScreen from './screens/CreateSongScreen.jsx'
 import TraitsScreen from './screens/TraitsScreen.jsx'
+import SongDetailScreen from './screens/SongDetailScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
-import { createNewGame, createSong, trainTrait } from './game/state.js'
+import {
+  createNewGame,
+  createSong,
+  trainTrait,
+  polishSong,
+  releaseSong,
+  setMarketing,
+} from './game/state.js'
 import { advanceWeek } from './game/simulate.js'
 import { loadGame, saveGame, clearSave } from './game/save.js'
 import { SPRING_SOFT } from './ui/motion.js'
@@ -22,7 +30,7 @@ export default function App() {
   const [game, setGame] = useState(() => loadGame())
   const [tab, setTab] = useState('music')
   const [creating, setCreating] = useState(false)   // is the CREATE A SONG page open?
-  const [newSong, setNewSong] = useState(null)      // song to show in the reveal popup
+  const [openSongId, setOpenSongId] = useState(null) // which song's page is open
   const [report, setReport] = useState(null)        // week summary popup
 
   // Autosave: any time the game changes, write it to localStorage.
@@ -40,12 +48,29 @@ export default function App() {
   }
 
   // ---- actions ------------------------------------------------------------
+  // Making a song no longer puts it out. You land on the song's own page,
+  // where you can polish it and then release it when you're ready.
   function handleCreateSong(opts) {
     const result = createSong(game, opts)
     if (result.error) return
     setGame(result.game)
     setCreating(false)
-    setNewSong(result.song)
+    setOpenSongId(result.song.id)
+  }
+
+  function handlePolish(songId, which) {
+    const result = polishSong(game, songId, which)
+    if (!result.error) setGame(result.game)
+  }
+
+  function handleRelease(songId) {
+    const result = releaseSong(game, songId)
+    if (!result.error) setGame(result.game)
+  }
+
+  function handleSetMarketing(songId, tierId) {
+    const result = setMarketing(game, songId, tierId)
+    if (!result.error) setGame(result.game)
   }
 
   function handleTrain(traitId) {
@@ -65,6 +90,7 @@ export default function App() {
     setGame(null)
     setTab('music')
     setCreating(false)
+    setOpenSongId(null)
   }
 
   function handleImport(file) {
@@ -88,7 +114,8 @@ export default function App() {
   // ---- main app -----------------------------------------------------------
   // Each screen gets a `key`. When the key changes, AnimatePresence springs the
   // old one out and the new one in.
-  const screenKey = creating ? 'create' : tab
+  const openSong = openSongId ? game.songs.find((s) => s.id === openSongId) : null
+  const screenKey = creating ? 'create' : openSong ? `song-${openSong.id}` : tab
 
   return (
     <PhoneFrame>
@@ -110,12 +137,25 @@ export default function App() {
                 onBack={() => setCreating(false)}
                 onCreate={handleCreateSong}
               />
+            ) : openSong ? (
+              <SongDetailScreen
+                game={game}
+                song={openSong}
+                onBack={() => setOpenSongId(null)}
+                onPolish={handlePolish}
+                onRelease={handleRelease}
+                onSetMarketing={handleSetMarketing}
+              />
             ) : tab === 'traits' ? (
               <TraitsScreen game={game} onTrain={handleTrain} />
             ) : tab === 'settings' ? (
               <SettingsScreen game={game} onReset={handleReset} onImport={handleImport} />
             ) : (
-              <MusicScreen game={game} onCreateSong={() => setCreating(true)} />
+              <MusicScreen
+                game={game}
+                onCreateSong={() => setCreating(true)}
+                onOpenSong={setOpenSongId}
+              />
             )}
           </motion.div>
         </AnimatePresence>
@@ -125,15 +165,13 @@ export default function App() {
         tab={tab}
         setTab={(t) => {
           setCreating(false)
+          setOpenSongId(null)
           setTab(t)
         }}
       />
 
       <AnimatePresence>
-        {newSong && (
-          <SongResultModal key="song" song={newSong} onClose={() => setNewSong(null)} />
-        )}
-        {!newSong && report && (
+        {report && (
           <WeekReportModal key="week" report={report} onClose={() => setReport(null)} />
         )}
       </AnimatePresence>

@@ -4,7 +4,8 @@
 // ============================================================================
 
 import { CONFIG } from './config.js'
-import { rollQuality } from './quality.js'
+import { rollQuality, rollVirality, polishCost } from './quality.js'
+import { getMarketing } from './marketing.js'
 import { trainCost, getTrait } from './traits.js'
 
 let idCounter = 0
@@ -16,7 +17,7 @@ function newId() {
 // A brand new career.
 export function createNewGame({ name, genreId }) {
   return {
-    version: 3,
+    version: 4,
     week: 1,
     year: CONFIG.START_YEAR,
     player: {
@@ -38,7 +39,9 @@ export function createNewGame({ name, genreId }) {
 // on a missing field.
 //   v1 kept the three song traits under `stats`.
 //   v2 used a 1-10 trait scale with a per-level progress bar.
-//   v3 (now) uses a 1-100 scale where one training is +1.
+//   v3 used a 1-100 trait scale where one training is +1.
+//   v4 (now) splits a song into production + virality and makes releasing a
+//      separate, deliberate step.
 export function migrate(game) {
   if (!game || !game.player) return game
   const p = game.player
@@ -65,9 +68,24 @@ export function migrate(game) {
   }
 
   const { stats, statXp, traitProgress, ...rest } = p
+
+  // Songs from before v4 had a single `quality` and were released on creation.
+  const songs = (game.songs || []).map((song) => {
+    if (song.production !== undefined) return song
+    return {
+      ...song,
+      production: song.quality ?? 1,
+      virality: (song.virality ?? 1) * (fromVersion < 3 ? 10 : 1),
+      marketingTrait: song.marketing ?? traits.marketing,
+      marketingTier: song.marketingTier ?? 'none',
+      released: song.released ?? true,
+    }
+  })
+
   return {
     ...game,
-    version: 3,
+    version: 4,
+    songs,
     player: { ...rest, traits, homeStudioRating },
   }
 }
@@ -90,14 +108,17 @@ export function createSong(game, { title, genreId, explicit, producer, writer, s
   if (!hasEnergy(game, CONFIG.ENERGY_PER_SONG)) return { error: 'Not enough energy.' }
   if (!canAfford(game, cost)) return { error: 'Not enough cash.' }
 
-  const quality = rollQuality(game.player, producer, writer, studio)
+  const production = rollQuality(game.player, producer, writer, studio)
 
   const song = {
     id: newId(),
     title: title.trim(),
     genreId,
     explicit,
-    quality,
+    // A song has two ratings. Production is how good it sounds; virality is
+    // how far it travels. Both can be polished before release.
+    production,
+    virality: rollVirality(game.player),
     credits: {
       producer: producer.name,
       writer: writer.name,
@@ -106,14 +127,17 @@ export function createSong(game, { title, genreId, explicit, producer, writer, s
       writerRating: writer.rating,
       studioRating: studio.rating,
     },
-    // Snapshot of the traits that shaped this song's performance, so a song
-    // released while you were bad doesn't suddenly improve later.
-    virality: game.player.traits.virality,
-    marketing: game.player.traits.marketing,
+    // Snapshot of the Marketing trait that shaped this song, so an old song
+    // doesn't retroactively improve as you train.
+    marketingTrait: game.player.traits.marketing,
+    // The paid campaign you buy on the SET MARKETING screen.
+    marketingTier: 'none',
     cost,
-    released: true,
-    releasedOnWeek: game.week,
-    releasedOnYear: game.year,
+    // Songs are NOT released when you make them. They sit in your catalogue
+    // until you spend the energy to put them out.
+    released: false,
+    releasedOnWeek: null,
+    releasedOnYear: null,
     totalStreams: 0,
     lastWeekStreams: 0,
     cold: false,
@@ -152,6 +176,85 @@ export function trainTrait(game, traitId) {
         ...game.player,
         energy: game.player.energy - cost,
         traits: { ...game.player.traits, [traitId]: level + 1 },
+      },
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Polish an unreleased song: spend energy to nudge its Production Rating or
+// Virality up by +0.5. `which` is 'production' or 'virality'.
+// ---------------------------------------------------------------------------
+export function polishSong(game, songId, which) {
+  const song = game.songs.find((s) => s.id === songId)
+  if (!song) return { error: 'Song not found.' }
+  if (song.released) return { error: 'This song is already out.' }
+  if (which !== 'production' && which !== 'virality') return { error: 'Unknown stat.' }
+
+  const current = song[which]
+  if (current >= CONFIG.MAX_QUALITY) return { error: 'Already maxed out.' }
+
+  const cost = polishCost(current)
+  if (!hasEnergy(game, cost)) return { error: 'Not enough energy.' }
+
+  // Keep it to one decimal place so +0.5 steps stay tidy.
+  const next = Math.min(
+    CONFIG.MAX_QUALITY,
+    Math.round((current + CONFIG.POLISH_STEP) * 10) / 10
+  )
+
+  return {
+    game: {
+      ...game,
+      songs: game.songs.map((s) => (s.id === songId ? { ...s, [which]: next } : s)),
+      player: { ...game.player, energy: game.player.energy - cost },
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Buy a marketing campaign for an unreleased song. Swapping tiers charges the
+// full new price (you don't get a refund on the old one).
+// ---------------------------------------------------------------------------
+export function setMarketing(game, songId, tierId) {
+  const song = game.songs.find((s) => s.id === songId)
+  if (!song) return { error: 'Song not found.' }
+  if (song.released) return { error: 'This song is already out.' }
+
+  const tier = getMarketing(tierId)
+  if (!canAfford(game, tier.cost)) return { error: 'Not enough cash.' }
+
+  return {
+    game: {
+      ...game,
+      songs: game.songs.map((s) =>
+        s.id === songId ? { ...s, marketingTier: tier.id } : s
+      ),
+      player: { ...game.player, cash: game.player.cash - tier.cost },
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Release a song. Costs energy, and from this week on it starts earning.
+// ---------------------------------------------------------------------------
+export function releaseSong(game, songId) {
+  const song = game.songs.find((s) => s.id === songId)
+  if (!song) return { error: 'Song not found.' }
+  if (song.released) return { error: 'This song is already out.' }
+  if (!hasEnergy(game, CONFIG.ENERGY_PER_RELEASE)) return { error: 'Not enough energy.' }
+
+  return {
+    game: {
+      ...game,
+      songs: game.songs.map((s) =>
+        s.id === songId
+          ? { ...s, released: true, releasedOnWeek: game.week, releasedOnYear: game.year }
+          : s
+      ),
+      player: {
+        ...game.player,
+        energy: game.player.energy - CONFIG.ENERGY_PER_RELEASE,
       },
     },
   }

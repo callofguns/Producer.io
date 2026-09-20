@@ -18,7 +18,7 @@ const MARKS = {
 // the layout is final and we can turn them on one at a time later.
 const LOCKED_ROWS = ['ALBUMS', 'AWARDS', 'CERTIFICATIONS', 'FESTIVALS', 'LABEL', 'MERCH']
 
-export default function MusicScreen({ game, onCreateSong }) {
+export default function MusicScreen({ game, onCreateSong, onOpenSong }) {
   const perPlatform = splitAcrossPlatforms(game.player.totalStreams)
 
   return (
@@ -65,7 +65,9 @@ export default function MusicScreen({ game, onCreateSong }) {
       >
         <span className="row-label">SONGS</span>
         <span className="row-actions">
-          <span className="circle-btn gold">{game.songs.length}</span>
+          <span className="circle-btn gold" title="songs in your catalogue">
+            {game.songs.length}
+          </span>
           <motion.button className="circle-btn" whileTap={tapSmall} onClick={onCreateSong}>
             +
           </motion.button>
@@ -89,7 +91,7 @@ export default function MusicScreen({ game, onCreateSong }) {
         ) : (
           <motion.div key="list" variants={listContainer} initial="hidden" animate="show">
             {game.songs.map((song) => (
-              <SongRow key={song.id} song={song} />
+              <SongRow key={song.id} song={song} onOpen={() => onOpenSong(song.id)} />
             ))}
           </motion.div>
         )}
@@ -108,12 +110,18 @@ export default function MusicScreen({ game, onCreateSong }) {
   )
 }
 
-function SongRow({ song }) {
-  const color = qualityColor(song.quality)
+function SongRow({ song, onOpen }) {
+  const color = qualityColor(song.production)
   const genre = getGenre(song.genreId)
 
   return (
-    <motion.div className="song" variants={listItem} layout whileTap={tapSmall}>
+    <motion.button
+      className={`song ${song.released ? '' : 'unreleased'}`}
+      variants={listItem}
+      layout
+      whileTap={tapSmall}
+      onClick={onOpen}
+    >
       <div className="song-art" style={{ background: color }}>
         {song.title.charAt(0).toUpperCase() || '?'}
       </div>
@@ -122,19 +130,26 @@ function SongRow({ song }) {
         <div className="song-title">
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</span>
           {song.explicit && <span className="tag-e">E</span>}
+          {!song.released && <span className="tag-draft">UNRELEASED</span>}
         </div>
         <div className="song-sub">
-          {genre.name} · {compact(song.totalStreams)} streams
-          {song.lastWeekStreams > 0 && ` · +${compact(song.lastWeekStreams)} last wk`}
+          {song.released ? (
+            <>
+              {genre.name} · {compact(song.totalStreams)} streams
+              {song.lastWeekStreams > 0 && ` · +${compact(song.lastWeekStreams)} last wk`}
+            </>
+          ) : (
+            <>{genre.name} · tap to polish and release</>
+          )}
         </div>
       </div>
 
       <div className="song-right">
         <div className="song-q" style={{ color }}>
-          {song.quality}
+          {Math.round(song.production)}
         </div>
-        <div className="song-q-label">{qualityLabel(song.quality)}</div>
+        <div className="song-q-label">{qualityLabel(song.production)}</div>
       </div>
-    </motion.div>
+    </motion.button>
   )
 }

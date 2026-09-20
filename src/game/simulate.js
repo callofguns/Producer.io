@@ -9,6 +9,7 @@
 import { CONFIG } from './config.js'
 import { getGenre, HOME_GENRE_BONUS } from './genres.js'
 import { PLATFORM_SPLIT } from './config.js'
+import { getMarketing } from './marketing.js'
 
 // How many streams a song pulls in its very first week.
 export function firstWeekStreams(song, player) {
@@ -16,7 +17,7 @@ export function firstWeekStreams(song, player) {
 
   // Great songs don't just do a bit better, they do WAY better.
   // (quality / 50) ^ 2.35 means a 100-quality song is ~5x a 50-quality one.
-  const qualityFactor = Math.pow(song.quality / 50, CONFIG.QUALITY_EXPONENT)
+  const qualityFactor = Math.pow(song.production / 50, CONFIG.QUALITY_EXPONENT)
 
   // Fame multiplies everything — an unknown and a superstar releasing the
   // same song get very different numbers.
@@ -32,17 +33,20 @@ export function firstWeekStreams(song, player) {
     streams *= 1 + CONFIG.EXPLICIT_STREAM_BONUS - CONFIG.EXPLICIT_RADIO_PENALTY
   }
 
-  // VIRALITY makes a new release hit harder. We use the level the song was
-  // made at, so old songs don't retroactively improve.
+  // The song's own VIRALITY rating decides how far it travels. This is a
+  // per-song number now, not your trait — polishing the song raises it.
   const virality = song.virality ?? 1
   streams *= 1 + (virality - 1) * CONFIG.VIRALITY_BONUS_PER_LEVEL
+
+  // The paid campaign bought on SET MARKETING before release.
+  streams *= getMarketing(song.marketingTier).multiplier
 
   return Math.max(1, Math.round(streams))
 }
 
-// MARKETING slows how fast a song fades, so it keeps earning for longer.
+// The MARKETING trait slows how fast a song fades, so it earns for longer.
 export function decayFor(song) {
-  const marketing = song.marketing ?? 1
+  const marketing = song.marketingTrait ?? 1
   const decay = CONFIG.STREAM_DECAY + (marketing - 1) * CONFIG.MARKETING_DECAY_PER_LEVEL
   return Math.min(decay, CONFIG.MAX_DECAY)
 }
@@ -101,7 +105,7 @@ export function advanceWeek(game) {
   )
   let fameGain = 0
   for (const s of releasedThisWeek) {
-    fameGain += (s.quality / 100) * CONFIG.FAME_GAIN_PER_RELEASE
+    fameGain += (s.production / 100) * CONFIG.FAME_GAIN_PER_RELEASE
   }
   const fame = Math.max(
     0,

@@ -1,5 +1,5 @@
 // ============================================================================
-// quality.js — how good a song turns out.
+// quality.js — a song's two ratings: PRODUCTION RATING and VIRALITY.
 //
 // THE RULE (your design):
 //   Quality is the average of three numbers —
@@ -50,7 +50,7 @@ export function expectedQuality(player, producer, writer, studio) {
   return clamp(Math.round(score), 1, CONFIG.MAX_QUALITY)
 }
 
-// The real roll, with luck. This is what gets stored on the song.
+// The real roll, with luck. This is the song's starting PRODUCTION RATING.
 export function rollQuality(player, producer, writer, studio, rng = Math.random) {
   const expected = expectedQuality(player, producer, writer, studio)
   const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
@@ -73,4 +73,19 @@ export function qualityColor(q) {
   if (q >= 58) return '#6ea8dc'
   if (q >= 40) return '#9a9ca3'
   return '#e2635c'
+}
+
+// A song's starting VIRALITY, rolled off your Virality trait. This is separate
+// from the production rating: it's how far the song travels, not how good it
+// sounds. You can push it up afterwards by polishing the song.
+export function rollVirality(player, rng = Math.random) {
+  const base = player.traits.virality
+  const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
+  return clamp(Math.round(base * luck * 10) / 10, 1, CONFIG.MAX_QUALITY)
+}
+
+// What it costs, in energy, to nudge a song's stat up by POLISH_STEP.
+// Gets pricier the higher the stat already is.
+export function polishCost(currentValue) {
+  return Math.ceil(CONFIG.POLISH_BASE + currentValue * CONFIG.POLISH_SCALE)
 }

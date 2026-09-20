@@ -27,8 +27,16 @@ npm run build   # output lands in dist/
 - Each song needs three hires: **Musicality** (producer), **Songwriting**
   (writer) and a **Studio**. Doing them yourself is free; better people cost
   money. Everything is visible from week 1 — cash is the only gate.
-- Song **quality** is the average of three numbers, times a studio bonus,
-  times a bit of luck:
+- Making a song does **not** release it. A new song sits in your catalogue as
+  a draft with two ratings you can work on:
+  - **Production Rating** — how good it sounds
+  - **Virality** — how far it travels, rolled off your Virality trait
+- On a song's page you can **polish** either rating: energy for **+0.5** at a
+  time, getting pricier as the rating climbs. You can also buy a **marketing
+  campaign** (Local $500 → Global $875,000), which multiplies its first week.
+- When you're happy, **RELEASE 10 ⚡**. Only released songs earn anything.
+- A song's **Production Rating** starts as the average of three numbers, times
+  a studio bonus, times a bit of luck:
   - **Vocals** — always your own trait. Nobody can be hired to sing for you.
   - **Songwriting** — the writer you hired, or your own trait if you wrote it.
   - **Rhythm** — the producer you hired, or your own trait if you produced it.
@@ -59,6 +67,7 @@ Almost all balance lives in one file:
 | `src/game/simulate.js` | What happens when you press END WEEK |
 | `src/game/roster.js` | The producers, writers and studios you can hire |
 | `src/game/traits.js` | The traits, their colours, energy costs and what they do |
+| `src/game/marketing.js` | The marketing campaign tiers and what each one is worth |
 | `src/game/genres.js` | Genre list and how popular each one is |
 | `src/game/state.js` | The shape of a save file |
 | `src/screens/` | One file per screen |

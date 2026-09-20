@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { compact, money } from '../game/format.js'
-import { qualityLabel, qualityColor } from '../game/quality.js'
-import { SPRING, SPRING_POP, tap } from './motion.js'
+import { SPRING, tap } from './motion.js'
 
 function Scrim({ children, onClose }) {
   return (
@@ -23,53 +22,6 @@ function Scrim({ children, onClose }) {
         {children}
       </motion.div>
     </motion.div>
-  )
-}
-
-// Shown right after a song is made, so the quality roll feels like a reveal.
-export function SongResultModal({ song, onClose }) {
-  const color = qualityColor(song.quality)
-  return (
-    <Scrim onClose={onClose}>
-      <div className="modal-kicker">RELEASED</div>
-      <div className="modal-title">{song.title}</div>
-
-      <motion.div
-        className="big-score"
-        style={{ color }}
-        initial={{ scale: 0.3, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ ...SPRING_POP, delay: 0.12 }}
-      >
-        {song.quality}
-      </motion.div>
-      <div className="big-score-label" style={{ color }}>
-        {qualityLabel(song.quality)}
-      </div>
-
-      <div style={{ marginTop: 20 }}>
-        <div className="stat-line">
-          <span className="k">Musicality</span>
-          <span>{song.credits.producer}</span>
-        </div>
-        <div className="stat-line">
-          <span className="k">Songwriting</span>
-          <span>{song.credits.writer}</span>
-        </div>
-        <div className="stat-line">
-          <span className="k">Studio</span>
-          <span>{song.credits.studio}</span>
-        </div>
-        <div className="stat-line">
-          <span className="k">Spent</span>
-          <span>{money(song.cost)}</span>
-        </div>
-      </div>
-
-      <motion.button className="modal-btn" whileTap={tap} onClick={onClose}>
-        NICE
-      </motion.button>
-    </Scrim>
   )
 }
 
