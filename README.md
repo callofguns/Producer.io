@@ -36,9 +36,12 @@ npm run build   # output lands in dist/
   95, so a maxed-out artist (100) is still better than anyone money can buy.
 - Traits run from **1 to 100**. You raise them on the **ARTIST TRAITS** tab:
   one tap costs energy and adds **+1**, and the bar shows how close that trait
-  is to 100. The price steps up by 2 every 10 levels (⚡2 at levels 1-10, ⚡4 at
-  11-20, up to ⚡20 at 91-100), so taking one trait to 100 costs about 1,080
-  energy — roughly 11 weeks of doing nothing else.
+  is to 100.
+- Training costs **(level + 1) energy**, so the price climbs by 1 with every
+  point: ⚡2 at level 1, ⚡7 at level 6, ⚡100 at level 99. **Virality costs
+  double**; business traits are half price because they level twice as fast.
+  Taking one normal trait all the way to 100 costs 5,049 energy — about 50
+  weeks of doing nothing else.
 - **Virality** makes a new song hit harder in week one.
   **Marketing** slows how fast songs fade, so they earn for longer.
 - Songs earn **streams** every week, decaying over time, which turn into cash.

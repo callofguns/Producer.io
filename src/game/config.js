@@ -39,14 +39,13 @@ export const CONFIG = {
   // One tap of the up arrow = +1 to the trait. The progress bar just shows how
   // close that trait is to 100.
   //
-  // The energy price steps up by TRAIN_COST_RISE every TRAIN_COST_STEP levels:
-  //   levels  1-10 cost the base (2 for most traits, 4 for Virality)
-  //   levels 11-20 cost base + 2
-  //   levels 21-30 cost base + 4  ... and so on up to base + 18 at 91-100.
-  // Taking one trait from 1 to 100 costs about 1,080 energy — roughly 11 weeks
-  // of doing nothing but training. Raise TRAIN_COST_RISE to make it harsher.
-  TRAIN_COST_STEP: 10,
-  TRAIN_COST_RISE: 2,
+  // The energy price is (level + 1), times the trait's own multiplier — so it
+  // goes up by 1 with every single point. See traits.js.
+  //   normal trait:   2 at level 1, 5 at level 4, 100 at level 99
+  //   Virality (x2):  4 at level 1, 200 at level 99
+  //   business (x0.5, "level twice as fast")
+  // Taking one normal trait all the way to 100 costs 5,049 energy — about 50
+  // weeks of doing nothing but training.
 
   // --- Fame -----------------------------------------------------------------
   START_FAME: 0,
