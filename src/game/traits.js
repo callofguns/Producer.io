@@ -1,8 +1,8 @@
 // ============================================================================
 // traits.js — the ARTIST TRAITS / BUSINESS TRAITS screen.
 //
-// You raise a trait by training it, which costs ENERGY. Each training fills
-// part of the progress bar; fill the bar and the trait levels up.
+// Traits run from 1 to 100. One training costs ENERGY and adds +1 to the
+// trait; the progress bar just shows how close it is to 100.
 // The energy price goes up as the trait gets higher.
 // ============================================================================
 
@@ -41,20 +41,16 @@ export function getTrait(id) {
 }
 
 // What one training session costs, in energy.
-// Matches your screenshot: level 1 and level 2 both cost 2, so the price only
-// creeps up every other level.
+// The price steps up every TRAIN_COST_STEP levels, so levels 1-10 all cost the
+// base (matching your screenshot, where level 1 and level 2 both cost 2).
 export function trainCost(traitId, level) {
   const trait = getTrait(traitId)
   if (!trait) return 0
-  return trait.baseCost + Math.floor((level - 1) / CONFIG.TRAIN_COST_STEP)
+  const steps = Math.floor((level - 1) / CONFIG.TRAIN_COST_STEP)
+  return trait.baseCost + steps * CONFIG.TRAIN_COST_RISE
 }
 
-// How many trainings fill the bar for the current level.
-export function trainingsPerLevel() {
-  return CONFIG.TRAININGS_PER_LEVEL
-}
-
-// The orange "1 SKILL LEVEL" at the top — the average of every trait.
+// The orange "1 SKILL LEVEL" at the top — the average of every trait (1-100).
 export function skillLevel(traits) {
   const values = TRAITS.map((t) => traits[t.id] ?? 1)
   return Math.round(values.reduce((a, b) => a + b, 0) / values.length)

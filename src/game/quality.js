@@ -21,7 +21,7 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n))
 }
 
-// The three numbers that get averaged, on the 1-10 scale.
+// The three numbers that get averaged, on the 1-100 scale.
 // `producer` and `writer` are whatever is selected in the create screen —
 // they already carry the right rating, because the "yourself" option is built
 // from your own traits (see roster.js).
@@ -33,7 +33,7 @@ export function qualityParts(player, producer, writer) {
   }
 }
 
-// Studio turns into a multiplier. Rating 5 = 1.00, rating 10 = 1.20.
+// Studio turns into a multiplier. Rating 50 = 1.00, rating 95 = 1.18.
 export function studioMultiplier(studio) {
   const diff = studio.rating - CONFIG.STUDIO_NEUTRAL_RATING
   return 1 + diff * CONFIG.STUDIO_BONUS_PER_RATING
@@ -43,9 +43,10 @@ export function studioMultiplier(studio) {
 // on the create screen, so you can see what your money is buying.
 export function expectedQuality(player, producer, writer, studio) {
   const parts = qualityParts(player, producer, writer)
+  // Traits and hire ratings are already on the 0-100 scale, so the average IS
+  // the score — no conversion needed.
   const average = (parts.vocals + parts.songwriting + parts.rhythm) / 3
-  // average is 1-10, so ×10 puts it on the 0-100 scale.
-  const score = average * 10 * studioMultiplier(studio)
+  const score = average * studioMultiplier(studio)
   return clamp(Math.round(score), 1, CONFIG.MAX_QUALITY)
 }
 

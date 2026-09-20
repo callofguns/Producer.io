@@ -32,11 +32,13 @@ npm run build   # output lands in dist/
   - **Vocals** — always your own trait. Nobody can be hired to sing for you.
   - **Songwriting** — the writer you hired, or your own trait if you wrote it.
   - **Rhythm** — the producer you hired, or your own trait if you produced it.
-  Hiring someone **replaces** your stat with theirs, so a rating-10 producer is
-  only worth paying for while your own Rhythm is below 10.
-- You raise traits on the **ARTIST TRAITS** tab by training them, which costs
-  **energy**. Each training fills part of the bar; fill it and the trait levels
-  up. The energy price rises as the trait gets higher.
+  Hiring someone **replaces** your stat with theirs. The roster runs from 15 to
+  95, so a maxed-out artist (100) is still better than anyone money can buy.
+- Traits run from **1 to 100**. You raise them on the **ARTIST TRAITS** tab:
+  one tap costs energy and adds **+1**, and the bar shows how close that trait
+  is to 100. The price steps up by 2 every 10 levels (⚡2 at levels 1-10, ⚡4 at
+  11-20, up to ⚡20 at 91-100), so taking one trait to 100 costs about 1,080
+  energy — roughly 11 weeks of doing nothing else.
 - **Virality** makes a new song hit harder in week one.
   **Marketing** slows how fast songs fade, so they earn for longer.
 - Songs earn **streams** every week, decaying over time, which turn into cash.

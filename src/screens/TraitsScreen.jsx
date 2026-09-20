@@ -63,13 +63,12 @@ export default function TraitsScreen({ game, onTrain }) {
 
 function TraitRow({ trait, game, onTrain, onInfo }) {
   const level = game.player.traits[trait.id] ?? 1
-  const progress = game.player.traitProgress[trait.id] ?? 0
   const maxed = level >= CONFIG.MAX_TRAIT
   const cost = trainCost(trait.id, level)
   const canTrain = trait.active && !maxed && game.player.energy >= cost
 
-  // 0 to 1, how full the bar is for this level.
-  const fill = maxed ? 1 : progress / CONFIG.TRAININGS_PER_LEVEL
+  // The bar simply shows how close this trait is to 100.
+  const fill = level / CONFIG.MAX_TRAIT
 
   return (
     <motion.div
@@ -128,7 +127,7 @@ function TraitRow({ trait, game, onTrain, onInfo }) {
   )
 }
 
-const HOW_IT_WORKS = `Training a trait costs energy and fills its bar. Fill the bar and the trait levels up. The price goes up as the trait gets higher, so late levels are a real investment.
+const HOW_IT_WORKS = `Every trait runs from 1 to 100. One tap of the arrow costs energy and adds +1; the bar shows how close you are to 100. The price steps up every 10 levels, so the last stretch is a real investment.
 
 You get ${CONFIG.MAX_ENERGY} energy back every week, and a song costs ${CONFIG.ENERGY_PER_SONG} — so every week you're choosing between making music now and getting better for later.
 
