@@ -24,6 +24,9 @@ export const CONFIG = {
   POLISH_SCALE: 0.5,
   // Energy refills completely every time you press END WEEK.
 
+  // --- Lifestyle & jobs -----------------------------------------------------
+  ENERGY_TO_FIND_JOB: 5,   // matches the "FIND A JOB ⚡5" row
+
   // --- Money ----------------------------------------------------------------
   START_CASH: 0,
   PAYOUT_PER_STREAM: 0.004, // dollars earned per stream (~$4 per 1,000 streams)

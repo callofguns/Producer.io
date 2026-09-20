@@ -771,3 +771,57 @@ input {
   letter-spacing: 0.5px;
   flex: 0 0 auto;
 }
+
+/* --------------------------------------------------------------------------
+   Lifestyle + job board
+   -------------------------------------------------------------------------- */
+.pill.coral { background: var(--coral); }
+
+.job-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.job-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.job-title .job-sep { color: var(--muted); font-weight: 600; }
+.job-energy {
+  color: var(--coral);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.job-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.job-meta svg { color: var(--coral); }
+
+.quit-btn {
+  background: #ffffff1a;
+  color: var(--coral);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}

@@ -6,6 +6,7 @@
 import { CONFIG } from './config.js'
 import { rollQuality, rollVirality, polishCost } from './quality.js'
 import { getMarketing } from './marketing.js'
+import { rollJobBoard } from './jobs.js'
 import { trainCost, getTrait } from './traits.js'
 
 let idCounter = 0
@@ -32,6 +33,9 @@ export function createNewGame({ name, genreId }) {
       totalEarned: 0,
     },
     songs: [],
+    // The job you're currently working, and the offers on the board.
+    job: null,
+    jobBoard: rollJobBoard(),
   }
 }
 
@@ -86,6 +90,8 @@ export function migrate(game) {
     ...game,
     version: 4,
     songs,
+    job: game.job ?? null,
+    jobBoard: game.jobBoard?.length ? game.jobBoard : rollJobBoard(),
     player: { ...rest, traits, homeStudioRating },
   }
 }
@@ -258,4 +264,43 @@ export function releaseSong(game, songId) {
       },
     },
   }
+}
+
+// ---------------------------------------------------------------------------
+// Jobs
+// ---------------------------------------------------------------------------
+
+// Spend energy to shuffle the offers on the board.
+export function refreshJobBoard(game) {
+  if (!hasEnergy(game, CONFIG.ENERGY_TO_FIND_JOB)) return { error: 'Not enough energy.' }
+  return {
+    game: {
+      ...game,
+      jobBoard: rollJobBoard(),
+      player: {
+        ...game.player,
+        energy: game.player.energy - CONFIG.ENERGY_TO_FIND_JOB,
+      },
+    },
+  }
+}
+
+// Take a job. You can only hold one at a time — accepting a new one replaces
+// whatever you were doing.
+export function acceptJob(game, jobId) {
+  const offer = game.jobBoard.find((j) => j.id === jobId)
+  if (!offer) return { error: 'That job is gone.' }
+  if (offer.energy >= CONFIG.MAX_ENERGY) return { error: 'That job would eat all your energy.' }
+
+  return {
+    game: {
+      ...game,
+      job: { ...offer, weeksLeft: offer.weeks },
+    },
+  }
+}
+
+// Walk away from a contract early. Costs nothing but the wage.
+export function quitJob(game) {
+  return { game: { ...game, job: null } }
 }

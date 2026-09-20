@@ -11,6 +11,8 @@ import MusicScreen from './screens/MusicScreen.jsx'
 import CreateSongScreen from './screens/CreateSongScreen.jsx'
 import TraitsScreen from './screens/TraitsScreen.jsx'
 import SongDetailScreen from './screens/SongDetailScreen.jsx'
+import LifestyleScreen from './screens/LifestyleScreen.jsx'
+import JobBoardScreen from './screens/JobBoardScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
 import {
@@ -20,6 +22,9 @@ import {
   polishSong,
   releaseSong,
   setMarketing,
+  refreshJobBoard,
+  acceptJob,
+  quitJob,
 } from './game/state.js'
 import { advanceWeek } from './game/simulate.js'
 import { loadGame, saveGame, clearSave } from './game/save.js'
@@ -32,6 +37,7 @@ export default function App() {
   const [creating, setCreating] = useState(false)   // is the CREATE A SONG page open?
   const [openSongId, setOpenSongId] = useState(null) // which song's page is open
   const [report, setReport] = useState(null)        // week summary popup
+  const [jobBoardOpen, setJobBoardOpen] = useState(false)
 
   // Autosave: any time the game changes, write it to localStorage.
   useEffect(() => {
@@ -79,6 +85,24 @@ export default function App() {
     setGame(result.game)
   }
 
+  function handleFindJob() {
+    // Looking at the board costs energy, same as refreshing it.
+    const result = refreshJobBoard(game)
+    if (result.error) return
+    setGame(result.game)
+    setJobBoardOpen(true)
+  }
+
+  function handleAcceptJob(jobId) {
+    const result = acceptJob(game, jobId)
+    if (!result.error) setGame(result.game)
+    setJobBoardOpen(false)
+  }
+
+  function handleQuitJob() {
+    setGame(quitJob(game).game)
+  }
+
   function handleEndWeek() {
     const { nextState, report: r } = advanceWeek(game)
     setGame(nextState)
@@ -91,6 +115,7 @@ export default function App() {
     setTab('music')
     setCreating(false)
     setOpenSongId(null)
+    setJobBoardOpen(false)
   }
 
   function handleImport(file) {
@@ -115,7 +140,13 @@ export default function App() {
   // Each screen gets a `key`. When the key changes, AnimatePresence springs the
   // old one out and the new one in.
   const openSong = openSongId ? game.songs.find((s) => s.id === openSongId) : null
-  const screenKey = creating ? 'create' : openSong ? `song-${openSong.id}` : tab
+  const screenKey = creating
+    ? 'create'
+    : openSong
+      ? `song-${openSong.id}`
+      : jobBoardOpen
+        ? 'jobs'
+        : tab
 
   return (
     <PhoneFrame>
@@ -146,6 +177,22 @@ export default function App() {
                 onRelease={handleRelease}
                 onSetMarketing={handleSetMarketing}
               />
+            ) : jobBoardOpen ? (
+              <JobBoardScreen
+                game={game}
+                onBack={() => setJobBoardOpen(false)}
+                onAccept={handleAcceptJob}
+                onRefresh={() => {
+                  const r = refreshJobBoard(game)
+                  if (!r.error) setGame(r.game)
+                }}
+              />
+            ) : tab === 'home' ? (
+              <LifestyleScreen
+                game={game}
+                onFindJob={handleFindJob}
+                onQuitJob={handleQuitJob}
+              />
             ) : tab === 'traits' ? (
               <TraitsScreen game={game} onTrain={handleTrain} />
             ) : tab === 'settings' ? (
@@ -166,6 +213,7 @@ export default function App() {
         setTab={(t) => {
           setCreating(false)
           setOpenSongId(null)
+          setJobBoardOpen(false)
           setTab(t)
         }}
       />

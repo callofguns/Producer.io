@@ -32,12 +32,18 @@ export function WeekReportModal({ report, onClose }) {
       <div className="modal-kicker">
         WEEK {report.week}, {report.year}
       </div>
-      <div className="modal-title">{money(report.earned)} earned</div>
+      <div className="modal-title">{money(report.earned + (report.wages || 0))} earned</div>
 
       <div className="stat-line">
         <span className="k">Streams this week</span>
         <span>{compact(report.streams)}</span>
       </div>
+      {report.wages > 0 && (
+        <div className="stat-line">
+          <span className="k">{report.jobName}</span>
+          <span style={{ color: 'var(--green)' }}>+{money(report.wages)}</span>
+        </div>
+      )}
       <div className="stat-line">
         <span className="k">Songs out</span>
         <span>{report.songsOut}</span>
@@ -66,7 +72,13 @@ export function WeekReportModal({ report, onClose }) {
         </>
       )}
 
-      {report.streams === 0 && (
+      {report.jobEnded && (
+        <div style={{ color: 'var(--gold)', fontSize: 13.5, fontWeight: 700, marginTop: 12 }}>
+          Your contract ended. Time to find something else.
+        </div>
+      )}
+
+      {report.streams === 0 && report.wages === 0 && (
         <div style={{ color: 'var(--muted)', fontSize: 14, fontWeight: 600, marginTop: 14, lineHeight: 1.5 }}>
           Nothing is streaming yet. Make a song to start earning.
         </div>

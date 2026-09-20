@@ -74,6 +74,18 @@ Almost all balance lives in one file:
 | `src/ui/motion.js` | The spring settings every animation shares |
 | `src/styles.css` | All the colours and layout |
 
+## Lifestyle and jobs
+
+The **home tab** is the LIFESTYLE screen. **FIND A JOB** (⚡5) opens the job
+board, which offers three contracts at a time. A job pays every week but takes
+its energy off your weekly total for the length of the contract — so early on
+the wage is worth it, and later the energy is worth more than the money.
+Refreshing the board costs the same ⚡5.
+
+The six spending categories (Food, Fashion, Health, Home, Relationships,
+Transportation) are drawn but switched off. Spending more on them will raise
+your maximum energy, which is what makes the top of each trait reachable.
+
 ## Not built yet
 
 Drawn in the UI but switched off on purpose, so the layout is final:

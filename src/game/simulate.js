@@ -99,6 +99,17 @@ export function advanceWeek(game) {
 
   const earned = weekStreams * CONFIG.PAYOUT_PER_STREAM
 
+  // --- your day job ---------------------------------------------------------
+  // It pays every week and takes a slice of next week's energy, until the
+  // contract runs out.
+  let job = game.job
+  let wages = 0
+  if (job) {
+    wages = job.pay
+    const weeksLeft = job.weeksLeft - 1
+    job = weeksLeft > 0 ? { ...job, weeksLeft } : null
+  }
+
   // Fame: released songs push it up, silence lets it slide.
   const releasedThisWeek = game.songs.filter(
     (s) => s.released && s.releasedOnWeek === game.week
@@ -120,18 +131,22 @@ export function advanceWeek(game) {
     year += 1
   }
 
+  // A job you're still working eats part of next week's energy.
+  const energy = Math.max(0, CONFIG.MAX_ENERGY - (job ? job.energy : 0))
+
   const nextState = {
     ...game,
     week,
     year,
     songs,
+    job,
     player: {
       ...player,
-      cash: player.cash + earned,
-      energy: CONFIG.MAX_ENERGY, // full refill every week
+      cash: player.cash + earned + wages,
+      energy,
       fame,
       totalStreams: player.totalStreams + weekStreams,
-      totalEarned: player.totalEarned + earned,
+      totalEarned: player.totalEarned + earned + wages,
     },
   }
 
@@ -140,6 +155,9 @@ export function advanceWeek(game) {
     year: game.year,
     streams: weekStreams,
     earned,
+    wages,
+    jobName: game.job ? game.job.name : null,
+    jobEnded: Boolean(game.job) && !job,
     fameGain: fameGain - CONFIG.FAME_DECAY_PER_WEEK,
     topSongs: perSong.sort((a, b) => b.streams - a.streams).slice(0, 3),
     songsOut: songs.filter((s) => s.released).length,
