@@ -1,0 +1,562 @@
+/* ==========================================================================
+   styles.css — all the looks. Colours are pulled from your screenshots.
+   Change a value in :root and it updates everywhere.
+   ========================================================================== */
+
+:root {
+  --bg: #474a52;          /* the main page grey */
+  --card: #32353c;        /* the dark rounded cards */
+  --card-hi: #3b3e46;     /* a card that's being pressed / a nested row */
+  --header: #22242a;      /* the top bar */
+  --line: #4d505857;
+
+  --text: #ffffff;
+  --muted: #a8aab0;
+  --ghost: #6e7178;       /* the big faded screen title, e.g. "MUSIC" */
+
+  --blue: #6ba3d6;
+  --blue-dim: #4d7ba6;
+  --green: #7fb84e;
+  --coral: #e2655e;
+  --gold: #d9ad2b;
+
+  --radius: 16px;
+  --radius-lg: 22px;
+  --pad: 18px;
+
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #17181c;    /* the dark space around the phone on desktop */
+  font-family: var(--font);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+#root { height: 100%; }
+
+button {
+  font-family: var(--font);
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+input {
+  font-family: var(--font);
+  border: none;
+  outline: none;
+  background: none;
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
+   The phone frame. On a laptop this draws a phone-shaped column in the middle
+   of the screen. On an actual phone it just fills the whole screen.
+   -------------------------------------------------------------------------- */
+.stage {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  max-height: 932px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 480px) and (min-height: 700px) {
+  .phone {
+    border-radius: 44px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 0 10px #0d0e11, 0 0 0 12px #2b2d33;
+  }
+}
+
+/* Fake iOS-style status bar — desktop only, so real phones don't show two. */
+.status-bar {
+  display: none;
+  height: 44px;
+  flex: 0 0 44px;
+  background: var(--header);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 600;
+}
+@media (min-width: 480px) and (min-height: 700px) {
+  .status-bar { display: flex; }
+}
+.status-icons { display: flex; align-items: center; gap: 6px; opacity: 0.9; }
+
+/* --------------------------------------------------------------------------
+   Top bar: cash + energy on the left, END WEEK + date on the right.
+   -------------------------------------------------------------------------- */
+.topbar {
+  flex: 0 0 auto;
+  background: var(--header);
+  padding: 10px var(--pad) 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.topbar-cash { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
+
+.topbar-energy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--coral);
+  font-weight: 800;
+  font-size: 19px;
+  margin-top: 2px;
+}
+.topbar-energy .sep { opacity: 0.55; font-weight: 600; }
+
+.end-week {
+  background: var(--green);
+  color: #fff;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.4px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(127, 184, 78, 0.28);
+}
+.end-week:disabled { opacity: 0.45; box-shadow: none; cursor: default; }
+
+.topbar-date {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 8px;
+  color: #e8e9ec;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollable screen body
+   -------------------------------------------------------------------------- */
+.screen {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 var(--pad) 24px;
+}
+
+.screen-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 0 18px;
+}
+
+.screen-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--ghost);
+  letter-spacing: -0.5px;
+}
+
+.pill {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  padding: 11px 24px;
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   Cards and rows
+   -------------------------------------------------------------------------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+}
+
+.row {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+}
+
+.row-label { font-size: 19px; font-weight: 800; letter-spacing: 0.3px; }
+
+.row-actions { display: flex; align-items: center; gap: 12px; }
+
+.circle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #c9cbd0;
+  color: #22242a;
+  display: grid;
+  place-items: center;
+  font-size: 19px;
+  font-weight: 800;
+  flex: 0 0 38px;
+}
+.circle-btn.gold { background: var(--gold); }
+
+/* Platform icon strip */
+.platforms {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px;
+}
+.platform {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+}
+.platform-dot {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.platform-count { font-size: 12px; font-weight: 700; color: var(--muted); }
+
+/* --------------------------------------------------------------------------
+   Song list
+   -------------------------------------------------------------------------- */
+.song {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+}
+.song-art {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  flex: 0 0 46px;
+  display: grid; place-items: center;
+  font-weight: 900; font-size: 17px; color: #14151a;
+}
+.song-main { flex: 1; min-width: 0; }
+.song-title {
+  font-size: 16px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 6px;
+}
+.song-sub { font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+.song-right { text-align: right; flex: 0 0 auto; }
+.song-q { font-size: 17px; font-weight: 900; }
+.song-q-label { font-size: 10px; font-weight: 800; letter-spacing: 0.7px; color: var(--muted); }
+
+.tag-e {
+  font-size: 9px; font-weight: 900;
+  background: var(--muted); color: #22242a;
+  border-radius: 3px; padding: 1px 3px;
+  flex: 0 0 auto;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 44px 20px;
+  line-height: 1.6;
+}
+
+/* --------------------------------------------------------------------------
+   Bottom navigation
+   -------------------------------------------------------------------------- */
+.bottomnav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px 8px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+.navbtn {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 6px 0;
+  color: #82858c;
+}
+.navbtn.active { color: var(--blue); }
+
+/* --------------------------------------------------------------------------
+   CREATE A SONG screen
+   -------------------------------------------------------------------------- */
+.create-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0 14px;
+}
+.back-btn { font-size: 26px; line-height: 1; color: #e8e9ec; }
+.create-title {
+  margin-left: auto;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--ghost);
+  letter-spacing: -0.5px;
+}
+.create-energy {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--coral); font-weight: 800; font-size: 18px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.seg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+
+.chip {
+  background: #ffffff1c;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8e9ec;
+  flex: 1;
+  text-align: center;
+}
+.chip.light { background: #eceef1; color: #22242a; flex: 0 0 auto; padding: 11px 24px; }
+.chip.disabled { opacity: 0.4; cursor: not-allowed; }
+
+.title-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.title-input {
+  flex: 1;
+  font-size: 21px;
+  font-weight: 700;
+  padding: 8px 0;
+}
+.title-input::placeholder { color: #ffffff59; font-weight: 700; }
+
+.ce-toggle {
+  display: flex;
+  background: #ffffff14;
+  border-radius: 10px;
+  padding: 3px;
+  flex: 0 0 auto;
+  position: relative;
+}
+.ce-opt {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 800;
+  border-radius: 8px;
+  position: relative;
+  z-index: 1;
+  color: #d4d6da;
+}
+.ce-opt.on { color: #22242a; }
+.ce-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: #eceef1;
+  z-index: 0;
+}
+
+.select-row {
+  background: #ffffff10;
+  border-radius: 12px;
+  padding: 13px;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+.select-row.disabled { opacity: 0.4; }
+
+/* The Musicality / Songwriting / Studio pickers */
+.slot { margin-bottom: 16px; }
+.slot-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.arrow {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 2px solid #9a9ca366;
+  color: #d4d6da;
+  display: grid; place-items: center;
+  font-size: 17px;
+  flex: 0 0 42px;
+}
+.arrow:disabled { opacity: 0.25; cursor: default; }
+.slot-center { flex: 1; text-align: center; min-width: 0; overflow: hidden; }
+.slot-name {
+  font-size: 21px; font-weight: 800; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.slot-meta { font-size: 15px; font-weight: 700; color: #d4d6da; margin-top: 2px; }
+.slot-meta .rating { color: var(--coral); }
+.slot-meta .locked { color: var(--coral); }
+
+.total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 22px 0 8px;
+}
+.total-label { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.6px; }
+.total-value { font-size: 27px; font-weight: 800; color: var(--coral); }
+
+.create-btn {
+  width: 100%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 19px;
+  border-radius: 999px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.create-btn:disabled { background: #5a5d66; color: #9a9ca3; cursor: default; }
+
+.cash-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+.error-note { text-align: center; color: var(--coral); font-size: 13.5px; font-weight: 700; margin-top: 10px; }
+
+/* --------------------------------------------------------------------------
+   Setup screen
+   -------------------------------------------------------------------------- */
+.setup { padding: 0 var(--pad); display: flex; flex-direction: column; height: 100%; }
+.setup-logo { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin-top: 70px; }
+.setup-logo span { color: var(--blue); }
+.setup-tag { color: var(--muted); font-weight: 600; font-size: 15px; margin: 8px 0 44px; line-height: 1.5; }
+
+.genre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.genre-btn {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 6px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #d4d6da;
+}
+.genre-btn.on { background: var(--blue); color: #fff; }
+
+.setup-input {
+  width: 100%;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Modals (week summary, new song result)
+   -------------------------------------------------------------------------- */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 11, 14, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 26px 22px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+.modal-kicker { font-size: 12px; font-weight: 800; letter-spacing: 1.2px; color: var(--muted); }
+.modal-title { font-size: 26px; font-weight: 900; margin: 6px 0 18px; letter-spacing: -0.3px; }
+.stat-line {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid #ffffff12;
+  font-size: 15px; font-weight: 700;
+}
+.stat-line:last-of-type { border-bottom: none; }
+.stat-line .k { color: var(--muted); }
+.modal-btn {
+  width: 100%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  padding: 16px;
+  border-radius: 999px;
+  margin-top: 18px;
+}
+.modal-btn.ghost { background: #ffffff14; }
+.modal-btn.danger { background: var(--coral); }
+
+.big-score { font-size: 62px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+.big-score-label { font-size: 14px; font-weight: 800; letter-spacing: 1.4px; margin-top: 4px; }
+
+/* Settings */
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border-radius: var(--radius);
+  padding: 18px 20px; margin-bottom: 12px;
+  width: 100%; text-align: left;
+  font-size: 16px; font-weight: 700;
+}
+.setting-row .v { color: var(--muted); font-weight: 700; font-size: 15px; }
+.setting-row.danger { color: var(--coral); }
+
+/* Nice scrollbars on desktop */
+.screen::-webkit-scrollbar { width: 0; }
