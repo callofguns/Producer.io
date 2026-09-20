@@ -560,3 +560,97 @@ input {
 
 /* Nice scrollbars on desktop */
 .screen::-webkit-scrollbar { width: 0; }
+
+/* --------------------------------------------------------------------------
+   ARTIST TRAITS / BUSINESS TRAITS screen
+   -------------------------------------------------------------------------- */
+.help-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #ffffff1f;
+  color: #d4d6da;
+  font-size: 16px; font-weight: 800;
+  display: grid; place-items: center;
+  margin-top: 20px;
+}
+
+.skill-level {
+  color: var(--gold);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.trait {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+  padding: 16px 16px 16px 20px;
+  margin-bottom: 13px;
+  cursor: pointer;
+}
+
+.trait-level {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  min-width: 30px;
+  text-align: center;
+  flex: 0 0 auto;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+}
+
+.trait-main { flex: 1; min-width: 0; }
+
+.trait-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trait-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: #ffffff4d;
+  margin-top: 8px;
+  overflow: hidden;
+  max-width: 250px;
+}
+.trait-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #5fd35f;
+}
+
+.trait-cost {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+.trait-cost svg { color: var(--coral); }
+
+.trait-up {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: #ffffffd9;
+  color: #33363d;
+  font-size: 20px;
+  font-weight: 800;
+  display: grid; place-items: center;
+  flex: 0 0 42px;
+}
+
+/* The traits screen has a label on the left, so its title needs to be
+   smaller and allowed to shrink rather than collide with it. */
+.traits-title { font-size: 26px; min-width: 0; }
+.skill-level { flex: 0 0 auto; white-space: nowrap; }
+.screen-head { gap: 12px; }

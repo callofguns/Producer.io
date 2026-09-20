@@ -18,30 +18,29 @@ export const CONFIG = {
   START_CASH: 0,
   PAYOUT_PER_STREAM: 0.004, // dollars earned per stream (~$4 per 1,000 streams)
 
-  // --- Player starting stats (1-10 scale) -----------------------------------
-  // NOTE: the stats screen design is still pending, so these are the three
-  // stats you told me about. Renaming/adding stats later only touches this
-  // block plus stats.js.
-  START_STATS: {
+  // --- Starting traits (the ARTIST TRAITS / BUSINESS TRAITS screen) ---------
+  // Everything starts at 1 except the two business traits, which start at 2,
+  // matching your screenshot.
+  START_TRAITS: {
     vocals: 1,
     songwriting: 1,
     rhythm: 1,
+    charisma: 1,
+    virality: 1,
+    videoDirecting: 1,
+    leadership: 2,
+    marketing: 2,
   },
+  MAX_TRAIT: 10,
   START_HOME_STUDIO_RATING: 5, // "Dhruv's Studio — 5 Rating | $0"
 
-  // --- Stat growth ----------------------------------------------------------
-  // ⚠️ PLACEHOLDER, pending your stats-screen design.
-  // Without SOME way to raise your stats, quality is hard-capped around 55 even
-  // if you hire the most expensive producer in the game — because your own
-  // talent is half the formula. So for now, making songs is practice: every
-  // song you make adds XP to all three stats.
-  // Set STAT_GROWTH_ENABLED to false to turn this off entirely.
-  STAT_GROWTH_ENABLED: true,
-  XP_PER_SONG: 1,
-  // XP needed to go from level L to L+1 is  L * XP_PER_STAT_LEVEL.
-  // At 12: 12 songs for 1->2, 24 more for 2->3 ... 540 songs total to reach 10.
-  XP_PER_STAT_LEVEL: 12,
-  MAX_STAT: 10,
+  // --- Training --------------------------------------------------------------
+  // Training a trait costs energy, and the price goes up as the trait levels.
+  // Cost = trait's base cost + floor((level - 1) / TRAIN_COST_STEP)
+  // With a step of 2: levels 1-2 cost the base, 3-4 cost base+1, 5-6 base+2 ...
+  TRAIN_COST_STEP: 2,
+  // How many trainings fill the progress bar and push you to the next level.
+  TRAININGS_PER_LEVEL: 8,
 
   // --- Fame -----------------------------------------------------------------
   START_FAME: 0,
@@ -74,6 +73,21 @@ export const CONFIG = {
   LUCK_MIN: 0.85,
   LUCK_MAX: 1.15,
   MAX_QUALITY: 100,
+
+  // The STUDIO slot isn't one of your three traits, so it works as a
+  // multiplier on the finished song instead. Your free home studio sits at
+  // rating 5, which lands on exactly 1.0 — no help, no penalty. The best
+  // studio in the game (rating 10) gives +20%.
+  STUDIO_NEUTRAL_RATING: 5,
+  STUDIO_BONUS_PER_RATING: 0.04,
+
+  // --- Trait effects on streams ---------------------------------------------
+  // VIRALITY boosts a song's first week. At level 10 that's +90% streams.
+  VIRALITY_BONUS_PER_LEVEL: 0.10,
+  // MARKETING keeps songs alive longer by slowing the weekly decay.
+  // At level 10 the decay moves from 0.72 up to about 0.81.
+  MARKETING_DECAY_PER_LEVEL: 0.010,
+  MAX_DECAY: 0.86, // safety cap so songs can never stop decaying entirely
 
   // --- Explicit tag ---------------------------------------------------------
   EXPLICIT_STREAM_BONUS: 0.06,  // +6% streams (edgier = more shares)

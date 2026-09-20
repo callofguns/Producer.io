@@ -1,57 +1,62 @@
 // ============================================================================
 // quality.js — how good a song turns out.
 //
-// ⚠️  PROVISIONAL — waiting on your stats-screen design.
-// You said: "It's an average of your 3 stats — vocals, songwriting and rhythm."
-// But the CREATE A SONG screen also shows a rating for the producer, the
-// writer and the studio you hired, and those obviously have to matter too
-// (otherwise paying $600,000 for DR. HALO would do nothing).
+// THE RULE (your design):
+//   Quality is the average of three numbers —
+//     VOCALS       always yours. Nobody can be hired to sing for you.
+//     SONGWRITING  the writer you hired, or your own trait if you wrote it.
+//     RHYTHM       the producer you hired, or your own trait if you made it.
+//   Hiring someone REPLACES your stat with theirs. That's what the $600,000
+//   producer is buying: his 10 instead of your 3.
 //
-// So right now the formula blends the two, and the blend is one number you
-// can change: TALENT_WEIGHT below. Once you confirm how your stats screen
-// works, this is the ONLY function that needs rewriting.
+//   The STUDIO isn't one of the three traits, so it multiplies the result
+//   instead. Your free home studio (rating 5) is neutral.
+//
+//   Then a bit of luck is rolled on top.
 // ============================================================================
 
 import { CONFIG } from './config.js'
-
-// 0.5 = your talent and who you hired matter equally.
-// 1.0 = only your own stats matter (pure "average of your 3 stats").
-// 0.0 = only the people you hired matter.
-export const TALENT_WEIGHT = 0.5
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n))
 }
 
-// The average of your three personal stats, on the 1-10 scale.
-export function talentScore(player) {
-  const { vocals, songwriting, rhythm } = player.stats
-  return (vocals + songwriting + rhythm) / 3
+// The three numbers that get averaged, on the 1-10 scale.
+// `producer` and `writer` are whatever is selected in the create screen —
+// they already carry the right rating, because the "yourself" option is built
+// from your own traits (see roster.js).
+export function qualityParts(player, producer, writer) {
+  return {
+    vocals: player.traits.vocals,
+    songwriting: writer.rating,
+    rhythm: producer.rating,
+  }
 }
 
-// The average of the three things you picked on the create screen.
-export function creditsScore(producer, writer, studio) {
-  return (producer.rating + writer.rating + studio.rating) / 3
+// Studio turns into a multiplier. Rating 5 = 1.00, rating 10 = 1.20.
+export function studioMultiplier(studio) {
+  const diff = studio.rating - CONFIG.STUDIO_NEUTRAL_RATING
+  return 1 + diff * CONFIG.STUDIO_BONUS_PER_RATING
 }
 
-// What the song WOULD score with no luck involved (0-100).
-// Useful for showing the player a preview before they hit CREATE.
+// What the song WOULD score with no luck (0-100). Used for the live preview
+// on the create screen, so you can see what your money is buying.
 export function expectedQuality(player, producer, writer, studio) {
-  const talent = talentScore(player)
-  const credits = creditsScore(producer, writer, studio)
-  const blended = talent * TALENT_WEIGHT + credits * (1 - TALENT_WEIGHT)
-  // blended is 1-10, so multiply by 10 to land on the 0-100 scale.
-  return clamp(Math.round(blended * 10), 1, CONFIG.MAX_QUALITY)
+  const parts = qualityParts(player, producer, writer)
+  const average = (parts.vocals + parts.songwriting + parts.rhythm) / 3
+  // average is 1-10, so ×10 puts it on the 0-100 scale.
+  const score = average * 10 * studioMultiplier(studio)
+  return clamp(Math.round(score), 1, CONFIG.MAX_QUALITY)
 }
 
-// The real roll, with luck. This is what actually gets stored on the song.
+// The real roll, with luck. This is what gets stored on the song.
 export function rollQuality(player, producer, writer, studio, rng = Math.random) {
   const expected = expectedQuality(player, producer, writer, studio)
   const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
   return clamp(Math.round(expected * luck), 1, CONFIG.MAX_QUALITY)
 }
 
-// Turns a 0-100 quality into the word the UI shows next to the song.
+// Turns a 0-100 quality into the word shown next to the song.
 export function qualityLabel(q) {
   if (q >= 89) return 'CLASSIC'
   if (q >= 74) return 'GREAT'

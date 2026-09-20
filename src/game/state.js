@@ -5,6 +5,7 @@
 
 import { CONFIG } from './config.js'
 import { rollQuality } from './quality.js'
+import { TRAITS, trainCost, getTrait } from './traits.js'
 
 let idCounter = 0
 function newId() {
@@ -12,10 +13,16 @@ function newId() {
   return `${Date.now().toString(36)}-${idCounter}`
 }
 
+function emptyProgress() {
+  const out = {}
+  for (const t of TRAITS) out[t.id] = 0
+  return out
+}
+
 // A brand new career.
 export function createNewGame({ name, genreId }) {
   return {
-    version: 1,
+    version: 2,
     week: 1,
     year: CONFIG.START_YEAR,
     player: {
@@ -24,13 +31,43 @@ export function createNewGame({ name, genreId }) {
       cash: CONFIG.START_CASH,
       energy: CONFIG.MAX_ENERGY,
       fame: CONFIG.START_FAME,
-      stats: { ...CONFIG.START_STATS },
-      statXp: { vocals: 0, songwriting: 0, rhythm: 0 },
+      traits: { ...CONFIG.START_TRAITS },
+      // How many trainings you've put into the CURRENT level of each trait.
+      traitProgress: emptyProgress(),
       homeStudioRating: CONFIG.START_HOME_STUDIO_RATING,
       totalStreams: 0,
       totalEarned: 0,
     },
     songs: [],
+  }
+}
+
+// Older saves (or a save from before a trait was added) get filled in here so
+// the game never crashes on a missing field.
+export function migrate(game) {
+  if (!game || !game.player) return game
+  const p = game.player
+
+  const traits = { ...CONFIG.START_TRAITS, ...(p.traits || {}) }
+  // Saves from v1 kept the three song traits under `stats`.
+  if (p.stats) {
+    traits.vocals = p.stats.vocals ?? traits.vocals
+    traits.songwriting = p.stats.songwriting ?? traits.songwriting
+    traits.rhythm = p.stats.rhythm ?? traits.rhythm
+  }
+
+  const traitProgress = { ...emptyProgress(), ...(p.traitProgress || {}) }
+
+  const { stats, statXp, ...rest } = p
+  return {
+    ...game,
+    version: 2,
+    player: {
+      ...rest,
+      traits,
+      traitProgress,
+      homeStudioRating: p.homeStudioRating ?? CONFIG.START_HOME_STUDIO_RATING,
+    },
   }
 }
 
@@ -45,7 +82,6 @@ export function hasEnergy(game, amount) {
 // ---------------------------------------------------------------------------
 // Make a song. Pays the money, spends the energy, rolls the quality, and
 // releases it immediately in the current week.
-// Returns { game, song } or { error } if you can't afford it.
 // ---------------------------------------------------------------------------
 export function createSong(game, { title, genreId, explicit, producer, writer, studio }) {
   const cost = producer.cost + writer.cost + studio.cost
@@ -69,6 +105,10 @@ export function createSong(game, { title, genreId, explicit, producer, writer, s
       writerRating: writer.rating,
       studioRating: studio.rating,
     },
+    // Snapshot of the traits that shaped this song's performance, so a song
+    // released while you were bad doesn't suddenly improve later.
+    virality: game.player.traits.virality,
+    marketing: game.player.traits.marketing,
     cost,
     released: true,
     releasedOnWeek: game.week,
@@ -78,45 +118,52 @@ export function createSong(game, { title, genreId, explicit, producer, writer, s
     cold: false,
   }
 
-  // Practice: making the song nudges your own stats up (see applyPractice).
-  const { leveledUp, ...grownStats } = applyPractice(game.player)
-
   const nextGame = {
     ...game,
     songs: [song, ...game.songs],
     player: {
       ...game.player,
-      ...grownStats,
       cash: game.player.cash - cost,
       energy: game.player.energy - CONFIG.ENERGY_PER_SONG,
     },
   }
 
-  return { game: nextGame, song, leveledUp }
+  return { game: nextGame, song }
 }
 
 // ---------------------------------------------------------------------------
-// PLACEHOLDER (see CONFIG.STAT_GROWTH_ENABLED): making a song is practice, so
-// it nudges all three of your stats up over time. Replace this once the stats
-// screen decides how you're really meant to improve.
+// Train a trait. Spends energy and fills the progress bar. Fill the bar and
+// the trait levels up.
 // ---------------------------------------------------------------------------
-function applyPractice(player) {
-  if (!CONFIG.STAT_GROWTH_ENABLED) return { leveledUp: [] }
+export function trainTrait(game, traitId) {
+  const trait = getTrait(traitId)
+  if (!trait) return { error: 'Unknown trait.' }
 
-  const stats = { ...player.stats }
-  const statXp = { ...(player.statXp || { vocals: 0, songwriting: 0, rhythm: 0 }) }
-  const leveledUp = []
+  const level = game.player.traits[traitId] ?? 1
+  if (level >= CONFIG.MAX_TRAIT) return { error: 'Already maxed out.' }
 
-  for (const key of Object.keys(stats)) {
-    if (stats[key] >= CONFIG.MAX_STAT) continue
-    statXp[key] += CONFIG.XP_PER_SONG
-    const needed = stats[key] * CONFIG.XP_PER_STAT_LEVEL
-    if (statXp[key] >= needed) {
-      statXp[key] -= needed
-      stats[key] += 1
-      leveledUp.push(key)
-    }
+  const cost = trainCost(traitId, level)
+  if (!hasEnergy(game, cost)) return { error: 'Not enough energy.' }
+
+  const progress = (game.player.traitProgress[traitId] ?? 0) + 1
+  const levelledUp = progress >= CONFIG.TRAININGS_PER_LEVEL
+
+  return {
+    game: {
+      ...game,
+      player: {
+        ...game.player,
+        energy: game.player.energy - cost,
+        traits: {
+          ...game.player.traits,
+          [traitId]: levelledUp ? level + 1 : level,
+        },
+        traitProgress: {
+          ...game.player.traitProgress,
+          [traitId]: levelledUp ? 0 : progress,
+        },
+      },
+    },
+    levelledUp,
   }
-
-  return { stats, statXp, leveledUp }
 }

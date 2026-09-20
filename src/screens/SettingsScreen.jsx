@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { exportSave } from '../game/save.js'
 import { getGenre } from '../game/genres.js'
+import { skillLevel } from '../game/traits.js'
 import { compact, money } from '../game/format.js'
 import { SPRING, tap } from '../ui/motion.js'
 
@@ -25,16 +26,8 @@ export default function SettingsScreen({ game, onReset, onImport }) {
         <span className="v">{getGenre(game.player.genreId).name}</span>
       </div>
       <div className="setting-row">
-        <span>Vocals</span>
-        <span className="v">{game.player.stats.vocals} / 10</span>
-      </div>
-      <div className="setting-row">
-        <span>Songwriting</span>
-        <span className="v">{game.player.stats.songwriting} / 10</span>
-      </div>
-      <div className="setting-row">
-        <span>Rhythm</span>
-        <span className="v">{game.player.stats.rhythm} / 10</span>
+        <span>Skill level</span>
+        <span className="v">{skillLevel(game.player.traits)}</span>
       </div>
       <div className="setting-row">
         <span>Fame</span>

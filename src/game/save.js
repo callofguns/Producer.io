@@ -5,6 +5,7 @@
 // ============================================================================
 
 import { CONFIG } from './config.js'
+import { migrate } from './state.js'
 
 export function loadGame() {
   try {
@@ -13,7 +14,8 @@ export function loadGame() {
     const parsed = JSON.parse(raw)
     // A very light sanity check so a corrupted save doesn't crash the game.
     if (!parsed || typeof parsed !== 'object' || !parsed.player) return null
-    return parsed
+    // Fills in anything an older save is missing so it doesn't crash.
+    return migrate(parsed)
   } catch {
     return null
   }

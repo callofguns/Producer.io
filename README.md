@@ -27,8 +27,18 @@ npm run build   # output lands in dist/
 - Each song needs three hires: **Musicality** (producer), **Songwriting**
   (writer) and a **Studio**. Doing them yourself is free; better people cost
   money. Everything is visible from week 1 — cash is the only gate.
-- Song **quality** (0-100) comes from your own stats plus who you hired, with a
-  bit of luck.
+- Song **quality** is the average of three numbers, times a studio bonus,
+  times a bit of luck:
+  - **Vocals** — always your own trait. Nobody can be hired to sing for you.
+  - **Songwriting** — the writer you hired, or your own trait if you wrote it.
+  - **Rhythm** — the producer you hired, or your own trait if you produced it.
+  Hiring someone **replaces** your stat with theirs, so a rating-10 producer is
+  only worth paying for while your own Rhythm is below 10.
+- You raise traits on the **ARTIST TRAITS** tab by training them, which costs
+  **energy**. Each training fills part of the bar; fill it and the trait levels
+  up. The energy price rises as the trait gets higher.
+- **Virality** makes a new song hit harder in week one.
+  **Marketing** slows how fast songs fade, so they earn for longer.
 - Songs earn **streams** every week, decaying over time, which turn into cash.
 - Press **END WEEK** to collect the money and refill your energy.
 - Progress **saves automatically** in your browser. Settings has export/import.
@@ -43,6 +53,7 @@ Almost all balance lives in one file:
 | `src/game/quality.js` | How good a song turns out |
 | `src/game/simulate.js` | What happens when you press END WEEK |
 | `src/game/roster.js` | The producers, writers and studios you can hire |
+| `src/game/traits.js` | The traits, their colours, energy costs and what they do |
 | `src/game/genres.js` | Genre list and how popular each one is |
 | `src/game/state.js` | The shape of a save file |
 | `src/screens/` | One file per screen |
@@ -52,5 +63,7 @@ Almost all balance lives in one file:
 ## Not built yet
 
 Drawn in the UI but switched off on purpose, so the layout is final:
-Featuring, Albums, Awards, Certifications, Festivals, Label, Merch, and the
-Catalog / Stats / Home tabs.
+Featuring, Albums, Awards, Certifications, Festivals, Label, Merch, the
+Stats / Home tabs, and the Charisma, Video Directing and Leadership traits
+(they belong to features that don't exist yet — shows, music videos, running
+your own label).

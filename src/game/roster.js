@@ -47,10 +47,10 @@ export const STUDIOS = [
 // The free "yourself" option that sits at the front of each list.
 // Its rating comes from YOUR stats, so these grow as you improve.
 export function selfProducer(player) {
-  return { id: 'self', name: player.name, rating: player.stats.rhythm, cost: 0, isSelf: true }
+  return { id: 'self', name: player.name, rating: player.traits.rhythm, cost: 0, isSelf: true }
 }
 export function selfWriter(player) {
-  return { id: 'self', name: `Written by ${player.name}`, rating: player.stats.songwriting, cost: 0, isSelf: true }
+  return { id: 'self', name: `Written by ${player.name}`, rating: player.traits.songwriting, cost: 0, isSelf: true }
 }
 export function selfStudio(player) {
   return { id: 'self', name: `${player.name}'s Studio`, rating: player.homeStudioRating, cost: 0, isSelf: true }

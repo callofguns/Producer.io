@@ -32,14 +32,26 @@ export function firstWeekStreams(song, player) {
     streams *= 1 + CONFIG.EXPLICIT_STREAM_BONUS - CONFIG.EXPLICIT_RADIO_PENALTY
   }
 
+  // VIRALITY makes a new release hit harder. We use the level the song was
+  // made at, so old songs don't retroactively improve.
+  const virality = song.virality ?? 1
+  streams *= 1 + (virality - 1) * CONFIG.VIRALITY_BONUS_PER_LEVEL
+
   return Math.max(1, Math.round(streams))
+}
+
+// MARKETING slows how fast a song fades, so it keeps earning for longer.
+export function decayFor(song) {
+  const marketing = song.marketing ?? 1
+  const decay = CONFIG.STREAM_DECAY + (marketing - 1) * CONFIG.MARKETING_DECAY_PER_LEVEL
+  return Math.min(decay, CONFIG.MAX_DECAY)
 }
 
 // Streams for a song that's already been out for `weeksOut` weeks.
 export function weeklyStreams(song, player, weeksOut) {
   if (weeksOut < 0) return 0
   const base = firstWeekStreams(song, player)
-  return Math.round(base * Math.pow(CONFIG.STREAM_DECAY, weeksOut))
+  return Math.round(base * Math.pow(decayFor(song), weeksOut))
 }
 
 // Splits a stream total across the four platforms (display only).

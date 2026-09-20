@@ -3,9 +3,6 @@ import { compact, money } from '../game/format.js'
 import { qualityLabel, qualityColor } from '../game/quality.js'
 import { SPRING, SPRING_POP, tap } from './motion.js'
 
-const STAT_NAMES = (k) =>
-  ({ vocals: 'Vocals', songwriting: 'Songwriting', rhythm: 'Rhythm' }[k] || k)
-
 function Scrim({ children, onClose }) {
   return (
     <motion.div
@@ -68,21 +65,6 @@ export function SongResultModal({ song, onClose }) {
           <span>{money(song.cost)}</span>
         </div>
       </div>
-
-      {song.leveledUp?.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.35 }}
-          style={{
-            marginTop: 14, padding: '10px 12px', borderRadius: 12,
-            background: '#7fb84e22', color: 'var(--green)',
-            fontSize: 13, fontWeight: 800, letterSpacing: 0.4,
-          }}
-        >
-          STAT UP: {song.leveledUp.map(STAT_NAMES).join(', ')}
-        </motion.div>
-      )}
 
       <motion.button className="modal-btn" whileTap={tap} onClick={onClose}>
         NICE

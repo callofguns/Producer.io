@@ -9,9 +9,10 @@ import { SongResultModal, WeekReportModal } from './ui/Modals.jsx'
 import SetupScreen from './screens/SetupScreen.jsx'
 import MusicScreen from './screens/MusicScreen.jsx'
 import CreateSongScreen from './screens/CreateSongScreen.jsx'
+import TraitsScreen from './screens/TraitsScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
-import { createNewGame, createSong } from './game/state.js'
+import { createNewGame, createSong, trainTrait } from './game/state.js'
 import { advanceWeek } from './game/simulate.js'
 import { loadGame, saveGame, clearSave } from './game/save.js'
 import { SPRING_SOFT } from './ui/motion.js'
@@ -44,7 +45,13 @@ export default function App() {
     if (result.error) return
     setGame(result.game)
     setCreating(false)
-    setNewSong({ ...result.song, leveledUp: result.leveledUp || [] })
+    setNewSong(result.song)
+  }
+
+  function handleTrain(traitId) {
+    const result = trainTrait(game, traitId)
+    if (result.error) return
+    setGame(result.game)
   }
 
   function handleEndWeek() {
@@ -103,6 +110,8 @@ export default function App() {
                 onBack={() => setCreating(false)}
                 onCreate={handleCreateSong}
               />
+            ) : tab === 'traits' ? (
+              <TraitsScreen game={game} onTrain={handleTrain} />
             ) : tab === 'settings' ? (
               <SettingsScreen game={game} onReset={handleReset} onImport={handleImport} />
             ) : (

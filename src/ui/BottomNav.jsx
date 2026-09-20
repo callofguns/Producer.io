@@ -2,11 +2,11 @@ import { motion } from 'framer-motion'
 import { MicIcon, NoteIcon, ChartIcon, HomeIcon, GearIcon } from './icons.jsx'
 import { SPRING_POP, tapSmall } from './motion.js'
 
-// V1 has Music and Settings switched on. The other three are drawn but
+// V1 has Music, Traits and Settings switched on. The other two are drawn but
 // disabled so the bar looks like your screenshot and we can light them up later.
 const TABS = [
   { id: 'music', Icon: MicIcon, enabled: true },
-  { id: 'catalog', Icon: NoteIcon, enabled: false },
+  { id: 'traits', Icon: NoteIcon, enabled: true },
   { id: 'stats', Icon: ChartIcon, enabled: false },
   { id: 'home', Icon: HomeIcon, enabled: false },
   { id: 'settings', Icon: GearIcon, enabled: true },
