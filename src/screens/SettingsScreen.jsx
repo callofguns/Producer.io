@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { exportSave } from '../game/save.js'
 import { getGenre } from '../game/genres.js'
 import { skillLevel } from '../game/traits.js'
+import { VERSION } from '../game/version.js'
 import { compact, money } from '../game/format.js'
 import { SPRING, tap } from '../ui/motion.js'
 
-export default function SettingsScreen({ game, onReset, onImport }) {
+export default function SettingsScreen({ game, onReset, onImport, onOpenUpdateLog }) {
   const [confirming, setConfirming] = useState(false)
 
   return (
@@ -67,6 +68,18 @@ export default function SettingsScreen({ game, onReset, onImport }) {
           }}
         />
       </motion.label>
+
+      <div className="field-label" style={{ marginTop: 26 }}>
+        ABOUT
+      </div>
+      <div className="setting-row">
+        <span>Version</span>
+        <span className="v">{VERSION}</span>
+      </div>
+      <motion.button className="setting-row" whileTap={tap} onClick={onOpenUpdateLog}>
+        <span>Update log</span>
+        <span className="v">→</span>
+      </motion.button>
 
       <motion.button
         className="setting-row danger"

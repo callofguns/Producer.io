@@ -16,6 +16,7 @@ import JobBoardScreen from './screens/JobBoardScreen.jsx'
 import LifestyleCategoryScreen from './screens/LifestyleCategoryScreen.jsx'
 import AlbumsScreen from './screens/AlbumsScreen.jsx'
 import AlbumDetailScreen from './screens/AlbumDetailScreen.jsx'
+import UpdateLogScreen from './screens/UpdateLogScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
 import {
@@ -48,6 +49,7 @@ export default function App() {
   const [openCategory, setOpenCategory] = useState(null)
   const [albumsOpen, setAlbumsOpen] = useState(false)
   const [openAlbumId, setOpenAlbumId] = useState(null)
+  const [updateLogOpen, setUpdateLogOpen] = useState(false)
 
   // Autosave: any time the game changes, write it to localStorage.
   useEffect(() => {
@@ -152,6 +154,7 @@ export default function App() {
     setOpenCategory(null)
     setAlbumsOpen(false)
     setOpenAlbumId(null)
+    setUpdateLogOpen(false)
   }
 
   function handleImport(file) {
@@ -176,19 +179,21 @@ export default function App() {
   // Each screen gets a `key`. When the key changes, AnimatePresence springs the
   // old one out and the new one in.
   const openSong = openSongId ? game.songs.find((s) => s.id === openSongId) : null
-  const screenKey = creating
-    ? 'create'
-    : openSong
-      ? `song-${openSong.id}`
-      : openAlbumId
-        ? `album-${openAlbumId}`
-        : albumsOpen
-          ? 'albums'
-          : jobBoardOpen
-            ? 'jobs'
-            : openCategory
-              ? `cat-${openCategory}`
-              : tab
+  const screenKey = updateLogOpen
+    ? 'updatelog'
+    : creating
+      ? 'create'
+      : openSong
+        ? `song-${openSong.id}`
+        : openAlbumId
+          ? `album-${openAlbumId}`
+          : albumsOpen
+            ? 'albums'
+            : jobBoardOpen
+              ? 'jobs'
+              : openCategory
+                ? `cat-${openCategory}`
+                : tab
 
   return (
     <PhoneFrame>
@@ -204,7 +209,9 @@ export default function App() {
             transition={SPRING_SOFT}
             style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}
           >
-            {creating ? (
+            {updateLogOpen ? (
+              <UpdateLogScreen onBack={() => setUpdateLogOpen(false)} />
+            ) : creating ? (
               <CreateSongScreen
                 game={game}
                 onBack={() => setCreating(false)}
@@ -267,7 +274,12 @@ export default function App() {
             ) : tab === 'traits' ? (
               <TraitsScreen game={game} onTrain={handleTrain} />
             ) : tab === 'settings' ? (
-              <SettingsScreen game={game} onReset={handleReset} onImport={handleImport} />
+              <SettingsScreen
+                game={game}
+                onReset={handleReset}
+                onImport={handleImport}
+                onOpenUpdateLog={() => setUpdateLogOpen(true)}
+              />
             ) : (
               <MusicScreen
                 game={game}
@@ -289,6 +301,7 @@ export default function App() {
           setOpenCategory(null)
           setAlbumsOpen(false)
           setOpenAlbumId(null)
+          setUpdateLogOpen(false)
           setTab(t)
         }}
       />

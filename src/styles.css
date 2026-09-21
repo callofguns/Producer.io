@@ -37,6 +37,8 @@ html, body {
   font-family: var(--font);
   color: var(--text);
   overscroll-behavior: none;
+  /* The page itself never scrolls — only the screen inside the phone does. */
+  overflow: hidden;
 }
 
 #root { height: 100%; }
@@ -63,18 +65,21 @@ input {
    of the screen. On an actual phone it just fills the whole screen.
    -------------------------------------------------------------------------- */
 .stage {
-  height: 100%;
+  /* dvh tracks the real visible height on phones, where 100vh can overshoot */
+  height: 100dvh;
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* On a phone the app fills the whole screen. The phone-shaped frame, and the
+   size cap that goes with it, only apply on bigger screens — capping height
+   on a tall phone would leave a dead band below the nav bar. */
 .phone {
   position: relative;
   width: 100%;
-  max-width: 430px;
   height: 100%;
-  max-height: 932px;
   background: var(--bg);
   display: flex;
   flex-direction: column;
@@ -83,6 +88,8 @@ input {
 
 @media (min-width: 480px) and (min-height: 700px) {
   .phone {
+    max-width: 430px;
+    max-height: 932px;
     border-radius: 44px;
     box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 0 10px #0d0e11, 0 0 0 12px #2b2d33;
   }
@@ -102,6 +109,8 @@ input {
 }
 @media (min-width: 480px) and (min-height: 700px) {
   .status-bar { display: flex; }
+  /* the mock status bar already provides the gap on desktop */
+  .topbar { padding-top: 10px; }
 }
 .status-icons { display: flex; align-items: center; gap: 6px; opacity: 0.9; }
 
@@ -111,7 +120,9 @@ input {
 .topbar {
   flex: 0 0 auto;
   background: var(--header);
-  padding: 10px var(--pad) 16px;
+  /* env(safe-area-inset-top) keeps the cash and energy clear of the notch
+     and status bar when the game is installed to a home screen. */
+  padding: calc(10px + env(safe-area-inset-top)) var(--pad) 16px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -158,7 +169,7 @@ input {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 0 var(--pad) 24px;
+  padding: 0 var(--pad) 32px;
 }
 
 .screen-head {
@@ -307,6 +318,8 @@ input {
   padding: 12px 8px calc(12px + env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid var(--line);
+  /* the home-indicator strip should match the app, not show the page behind */
+  box-shadow: 0 env(safe-area-inset-bottom) 0 var(--bg);
 }
 .navbtn {
   flex: 1;
@@ -962,3 +975,39 @@ input {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* --------------------------------------------------------------------------
+   Update log
+   -------------------------------------------------------------------------- */
+.card.release { padding: 20px 20px 16px; }
+
+.release-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.release-version {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--blue);
+  letter-spacing: -0.2px;
+}
+.release-date { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+
+.release-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.release-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #d4d6da;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+.release-list li { margin-bottom: 5px; }
+.release-list li::marker { color: var(--blue); }
