@@ -112,6 +112,9 @@ its energy off your weekly total for the length of the contract — so early on
 the wage is worth it, and later the energy is worth more than the money.
 Refreshing the board costs the same ⚡5.
 
+No job pays more than **$400 a week** (`MAX_JOB_PAY` in config.js). A day job
+is a leg-up, not a living — music has to overtake it.
+
 **Spending categories.** You pick one tier per category and it bills every
 week, forever, until you change or clear it. A flat $50/week base cost applies
 even with nothing bought.

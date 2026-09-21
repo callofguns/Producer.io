@@ -42,6 +42,9 @@ export const CONFIG = {
 
   // --- Lifestyle & jobs -----------------------------------------------------
   ENERGY_TO_FIND_JOB: 5,   // matches the "FIND A JOB ⚡5" row
+  // The best-paying job in the game. Day jobs are meant to get you off the
+  // ground, not to be a career — music has to overtake them quickly.
+  MAX_JOB_PAY: 400,
   // You're billed this every week even with nothing bought — the reference
   // game shows "Weekly Expenses: $50" on a fresh save.
   BASE_WEEKLY_EXPENSE: 50,
