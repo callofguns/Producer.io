@@ -227,7 +227,8 @@ export default function CreateSongScreen({ game, onBack, onCreate, onCreateAlbum
             className="overlay-screen"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            // stops taps reaching the create screen underneath while it slides away
+            exit={{ x: '100%', pointerEvents: 'none' }}
             transition={SPRING_SOFT}
           >
             <FeaturedArtistsScreen

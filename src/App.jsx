@@ -205,7 +205,18 @@ export default function App() {
             key={screenKey}
             initial={{ opacity: 0, x: creating ? 40 : 0, y: creating ? 0 : 12 }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: creating ? 0 : 0, y: -8 }}
+            // The screen on its way out stops taking taps straight away, and
+            // leaves on a short tween rather than a spring. AnimatePresence
+            // waits for the exit to finish before mounting the next screen, and
+            // a spring takes a few hundred ms to settle — long enough that a
+            // tap right after making a song would land on the old screen and
+            // appear to do nothing.
+            exit={{
+              opacity: 0,
+              y: -8,
+              pointerEvents: 'none',
+              transition: { duration: 0.12 },
+            }}
             transition={SPRING_SOFT}
             style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}
           >
