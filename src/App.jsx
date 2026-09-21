@@ -14,6 +14,8 @@ import SongDetailScreen from './screens/SongDetailScreen.jsx'
 import LifestyleScreen from './screens/LifestyleScreen.jsx'
 import JobBoardScreen from './screens/JobBoardScreen.jsx'
 import LifestyleCategoryScreen from './screens/LifestyleCategoryScreen.jsx'
+import AlbumsScreen from './screens/AlbumsScreen.jsx'
+import AlbumDetailScreen from './screens/AlbumDetailScreen.jsx'
 import SettingsScreen from './screens/SettingsScreen.jsx'
 
 import {
@@ -28,6 +30,8 @@ import {
   quitJob,
   setLifestyle,
   clearLifestyle,
+  createAlbum,
+  releaseAlbum,
 } from './game/state.js'
 import { advanceWeek } from './game/simulate.js'
 import { loadGame, saveGame, clearSave } from './game/save.js'
@@ -42,6 +46,8 @@ export default function App() {
   const [report, setReport] = useState(null)        // week summary popup
   const [jobBoardOpen, setJobBoardOpen] = useState(false)
   const [openCategory, setOpenCategory] = useState(null)
+  const [albumsOpen, setAlbumsOpen] = useState(false)
+  const [openAlbumId, setOpenAlbumId] = useState(null)
 
   // Autosave: any time the game changes, write it to localStorage.
   useEffect(() => {
@@ -107,6 +113,20 @@ export default function App() {
     setGame(quitJob(game).game)
   }
 
+  // Returns the new album's id so the create-song screen can select it
+  // straight away.
+  function handleCreateAlbum(title) {
+    const result = createAlbum(game, title)
+    if (result.error) return null
+    setGame(result.game)
+    return result.album.id
+  }
+
+  function handleReleaseAlbum(albumId) {
+    const result = releaseAlbum(game, albumId)
+    if (!result.error) setGame(result.game)
+  }
+
   function handlePickLifestyle(categoryId, tierId) {
     const result = setLifestyle(game, categoryId, tierId)
     if (!result.error) setGame(result.game)
@@ -130,6 +150,8 @@ export default function App() {
     setOpenSongId(null)
     setJobBoardOpen(false)
     setOpenCategory(null)
+    setAlbumsOpen(false)
+    setOpenAlbumId(null)
   }
 
   function handleImport(file) {
@@ -158,11 +180,15 @@ export default function App() {
     ? 'create'
     : openSong
       ? `song-${openSong.id}`
-      : jobBoardOpen
-        ? 'jobs'
-        : openCategory
-          ? `cat-${openCategory}`
-          : tab
+      : openAlbumId
+        ? `album-${openAlbumId}`
+        : albumsOpen
+          ? 'albums'
+          : jobBoardOpen
+            ? 'jobs'
+            : openCategory
+              ? `cat-${openCategory}`
+              : tab
 
   return (
     <PhoneFrame>
@@ -183,6 +209,7 @@ export default function App() {
                 game={game}
                 onBack={() => setCreating(false)}
                 onCreate={handleCreateSong}
+                onCreateAlbum={handleCreateAlbum}
               />
             ) : openSong ? (
               <SongDetailScreen
@@ -192,6 +219,25 @@ export default function App() {
                 onPolish={handlePolish}
                 onRelease={handleRelease}
                 onSetMarketing={handleSetMarketing}
+              />
+            ) : openAlbumId ? (
+              <AlbumDetailScreen
+                game={game}
+                albumId={openAlbumId}
+                onBack={() => setOpenAlbumId(null)}
+                onRelease={handleReleaseAlbum}
+                onOpenSong={(id) => {
+                  setOpenAlbumId(null)
+                  setAlbumsOpen(false)
+                  setOpenSongId(id)
+                }}
+              />
+            ) : albumsOpen ? (
+              <AlbumsScreen
+                game={game}
+                onBack={() => setAlbumsOpen(false)}
+                onOpenAlbum={setOpenAlbumId}
+                onCreateAlbum={handleCreateAlbum}
               />
             ) : jobBoardOpen ? (
               <JobBoardScreen
@@ -227,6 +273,7 @@ export default function App() {
                 game={game}
                 onCreateSong={() => setCreating(true)}
                 onOpenSong={setOpenSongId}
+                onOpenAlbums={() => setAlbumsOpen(true)}
               />
             )}
           </motion.div>
@@ -240,6 +287,8 @@ export default function App() {
           setOpenSongId(null)
           setJobBoardOpen(false)
           setOpenCategory(null)
+          setAlbumsOpen(false)
+          setOpenAlbumId(null)
           setTab(t)
         }}
       />

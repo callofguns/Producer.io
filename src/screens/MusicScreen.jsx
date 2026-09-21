@@ -16,9 +16,9 @@ const MARKS = {
 
 // Rows from your screenshot that aren't built yet. Drawn but switched off so
 // the layout is final and we can turn them on one at a time later.
-const LOCKED_ROWS = ['ALBUMS', 'AWARDS', 'CERTIFICATIONS', 'FESTIVALS', 'LABEL', 'MERCH']
+const LOCKED_ROWS = ['AWARDS', 'CERTIFICATIONS', 'FESTIVALS', 'LABEL', 'MERCH']
 
-export default function MusicScreen({ game, onCreateSong, onOpenSong }) {
+export default function MusicScreen({ game, onCreateSong, onOpenSong, onOpenAlbums }) {
   const perPlatform = splitAcrossPlatforms(game.player.totalStreams)
 
   return (
@@ -55,6 +55,24 @@ export default function MusicScreen({ game, onCreateSong, onOpenSong }) {
           })}
         </div>
       </motion.div>
+
+      {/* --- ALBUMS --- */}
+      <motion.button
+        className="row"
+        whileTap={tapSmall}
+        onClick={onOpenAlbums}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: 0.04 }}
+      >
+        <span className="row-label">ALBUMS</span>
+        <span className="row-actions">
+          {game.albums.length > 0 && (
+            <span className="circle-btn gold">{game.albums.length}</span>
+          )}
+          <span className="circle-btn">→</span>
+        </span>
+      </motion.button>
 
       {/* --- SONGS row: the + is how you make a song --- */}
       <motion.div
@@ -135,6 +153,7 @@ function SongRow({ song, onOpen }) {
         <div className="song-sub">
           {song.released ? (
             <>
+              {song.featuring ? `feat. ${song.featuring.name} · ` : ''}
               {genre.name} · {compact(song.totalStreams)} streams
               {song.lastWeekStreams > 0 && ` · +${compact(song.lastWeekStreams)} last wk`}
             </>

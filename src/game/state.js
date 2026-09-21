@@ -8,6 +8,8 @@ import { rollQuality, rollVirality, polishCost } from './quality.js'
 import { getMarketing } from './marketing.js'
 import { rollJobBoard } from './jobs.js'
 import { getCategory, getTier } from './lifestyle.js'
+import { getArtist } from './artists.js'
+import { albumTracks, getAlbum } from './albums.js'
 import { trainCost, getTrait } from './traits.js'
 
 let idCounter = 0
@@ -36,6 +38,7 @@ export function createNewGame({ name, genreId }) {
       totalEarned: 0,
     },
     songs: [],
+    albums: [],
     // The job you're currently working, and the offers on the board.
     job: null,
     jobBoard: rollJobBoard(),
@@ -86,6 +89,8 @@ export function migrate(game) {
       marketingTrait: song.marketing ?? traits.marketing,
       marketingTier: song.marketingTier ?? 'none',
       released: song.released ?? true,
+      albumId: song.albumId ?? null,
+      featuring: song.featuring ?? null,
     }
   })
 
@@ -93,6 +98,7 @@ export function migrate(game) {
     ...game,
     version: 4,
     songs,
+    albums: game.albums ?? [],
     job: game.job ?? null,
     jobBoard: game.jobBoard?.length ? game.jobBoard : rollJobBoard(),
     player: {
@@ -116,13 +122,21 @@ export function hasEnergy(game, amount) {
 // Make a song. Pays the money, spends the energy, rolls the quality, and
 // releases it immediately in the current week.
 // ---------------------------------------------------------------------------
-export function createSong(game, { title, genreId, explicit, producer, writer, studio }) {
-  const cost = producer.cost + writer.cost + studio.cost
+export function createSong(
+  game,
+  { title, genreId, explicit, producer, writer, studio, featureId = null, albumId = null }
+) {
+  const guest = getArtist(featureId)
+  const cost = producer.cost + writer.cost + studio.cost + (guest ? guest.fee : 0)
 
   if (!hasEnergy(game, CONFIG.ENERGY_PER_SONG)) return { error: 'Not enough energy.' }
   if (!canAfford(game, cost)) return { error: 'Not enough cash.' }
 
-  const production = rollQuality(game.player, producer, writer, studio)
+  // You can only add tracks to a record that hasn't dropped yet.
+  const album = getAlbum(game, albumId)
+  if (albumId && (!album || album.released)) return { error: 'That album is already out.' }
+
+  const production = rollQuality(game.player, producer, writer, studio, Math.random, featureId)
 
   const song = {
     id: newId(),
@@ -132,7 +146,9 @@ export function createSong(game, { title, genreId, explicit, producer, writer, s
     // A song has two ratings. Production is how good it sounds; virality is
     // how far it travels. Both can be polished before release.
     production,
-    virality: rollVirality(game.player),
+    virality: rollVirality(game.player, Math.random, featureId),
+    featuring: guest ? { id: guest.id, name: guest.name } : null,
+    albumId: albumId || null,
     credits: {
       producer: producer.name,
       writer: writer.name,
@@ -348,6 +364,86 @@ export function clearLifestyle(game, categoryId) {
       player: {
         ...game.player,
         lifestyle: { ...game.player.lifestyle, [categoryId]: null },
+      },
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Albums
+// ---------------------------------------------------------------------------
+
+// Start a new record. Free to begin — you pay for it in the songs you put on it.
+export function createAlbum(game, title) {
+  const name = (title || '').trim()
+  if (!name) return { error: 'Give the album a title.' }
+
+  const album = {
+    id: newId(),
+    title: name,
+    released: false,
+    releasedOnWeek: null,
+    releasedOnYear: null,
+    createdOnWeek: game.week,
+    createdOnYear: game.year,
+  }
+
+  return { game: { ...game, albums: [album, ...game.albums] }, album }
+}
+
+// Move an unreleased song onto a record, or back off it (albumId = null).
+export function setSongAlbum(game, songId, albumId) {
+  const song = game.songs.find((s) => s.id === songId)
+  if (!song) return { error: 'Song not found.' }
+  if (song.released) return { error: 'This song is already out.' }
+
+  if (albumId) {
+    const album = getAlbum(game, albumId)
+    if (!album) return { error: 'Album not found.' }
+    if (album.released) return { error: 'That album is already out.' }
+  }
+
+  return {
+    game: {
+      ...game,
+      songs: game.songs.map((s) => (s.id === songId ? { ...s, albumId: albumId || null } : s)),
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Drop the record. Every unreleased track on it goes out at once, and from
+// this week they all earn with the album's cross-promotion bonus.
+// ---------------------------------------------------------------------------
+export function releaseAlbum(game, albumId) {
+  const album = getAlbum(game, albumId)
+  if (!album) return { error: 'Album not found.' }
+  if (album.released) return { error: 'This album is already out.' }
+
+  const tracks = albumTracks(game, albumId)
+  if (tracks.length < CONFIG.MIN_ALBUM_TRACKS) {
+    return { error: `An album needs at least ${CONFIG.MIN_ALBUM_TRACKS} tracks.` }
+  }
+  if (!hasEnergy(game, CONFIG.ENERGY_PER_ALBUM_RELEASE)) return { error: 'Not enough energy.' }
+
+  const trackIds = new Set(tracks.map((t) => t.id))
+
+  return {
+    game: {
+      ...game,
+      albums: game.albums.map((a) =>
+        a.id === albumId
+          ? { ...a, released: true, releasedOnWeek: game.week, releasedOnYear: game.year }
+          : a
+      ),
+      songs: game.songs.map((s) =>
+        trackIds.has(s.id) && !s.released
+          ? { ...s, released: true, releasedOnWeek: game.week, releasedOnYear: game.year }
+          : s
+      ),
+      player: {
+        ...game.player,
+        energy: game.player.energy - CONFIG.ENERGY_PER_ALBUM_RELEASE,
       },
     },
   }

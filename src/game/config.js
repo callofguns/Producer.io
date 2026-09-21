@@ -13,6 +13,22 @@ export const CONFIG = {
   MAX_ENERGY: 100,          // the "100 | 100" in the top bar
   ENERGY_PER_SONG: 10,      // matches the "CREATE 10 ⚡" button
   ENERGY_PER_RELEASE: 10,   // matches the "RELEASE 10 ⚡" button on a song
+  ENERGY_PER_ALBUM_RELEASE: 25, // an album is a bigger push than a single
+
+  // --- Featuring ------------------------------------------------------------
+  // A guest artist lends you their verse and their audience. Their rating is
+  // blended into the song's production, their virality into its virality —
+  // so a big feature can carry a song well past your own traits.
+  FEATURE_PRODUCTION_WEIGHT: 0.35,
+  FEATURE_VIRALITY_WEIGHT: 0.5,
+
+  // --- Albums ---------------------------------------------------------------
+  // Tracks on an album cross-promote each other, so each extra track lifts
+  // every track on the record a little. Capped so a 30-track album isn't an
+  // automatic win.
+  ALBUM_BONUS_PER_TRACK: 0.05,
+  ALBUM_MAX_BONUS: 0.45,
+  MIN_ALBUM_TRACKS: 2,
 
   // --- Polishing a song -----------------------------------------------------
   // On an unreleased song you can spend energy to nudge its Production Rating

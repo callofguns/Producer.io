@@ -68,11 +68,41 @@ Almost all balance lives in one file:
 | `src/game/roster.js` | The producers, writers and studios you can hire |
 | `src/game/traits.js` | The traits, their colours, energy costs and what they do |
 | `src/game/marketing.js` | The marketing campaign tiers and what each one is worth |
+| `src/game/artists.js` | The featured-artist roster — swap this file for different names |
+| `src/game/albums.js` | Album ratings and the cross-promotion bonus |
+| `src/game/jobs.js` | The job board's contracts |
+| `src/game/lifestyle.js` | Spending categories, their tiers and bonuses |
 | `src/game/genres.js` | Genre list and how popular each one is |
 | `src/game/state.js` | The shape of a save file |
 | `src/screens/` | One file per screen |
 | `src/ui/motion.js` | The spring settings every animation shares |
 | `src/styles.css` | All the colours and layout |
+
+## Installing it as an app
+
+The game is a PWA, so you can install it to a phone's home screen or a
+desktop dock and it will open fullscreen and work offline.
+
+- **iPhone:** open the site in Safari, tap Share, then "Add to Home Screen"
+- **Android/desktop Chrome:** use the install icon in the address bar
+
+A new deploy replaces the cached version on the next load, so you won't get
+stuck on an old build.
+
+## Featuring and albums
+
+**Featuring.** On the create screen, tap **Featuring** to buy a guest verse.
+Each artist has a **virality** (how far their audience spreads it), a
+**rating** (how good their verse is) and a flat **fee**. The feature blends
+into both of the song's ratings, so a big name can carry a track well past
+your own traits — at a price.
+
+**Albums.** Start a record from the **ALBUMS** screen, or with the **+** on
+the create screen. New songs can go onto an open album instead of dropping as
+singles. An album's rating is the average of its tracks, and tracks
+cross-promote each other (+5% streams per track, capped at +45%). Releasing
+the album puts every track out at once for 25 energy; it needs at least 2
+tracks.
 
 ## Lifestyle and jobs
 
@@ -102,7 +132,7 @@ time — most expensive first — until the bill fits what you have.
 ## Not built yet
 
 Drawn in the UI but switched off on purpose, so the layout is final:
-Featuring, Albums, Awards, Certifications, Festivals, Label, Merch, the
-Stats / Home tabs, and the Charisma, Video Directing and Leadership traits
-(they belong to features that don't exist yet — shows, music videos, running
-your own label).
+Awards, Certifications, Festivals, Label, Merch, the Financials tab, the
+Relationships and Transportation lifestyle categories, and the Charisma,
+Video Directing and Leadership traits (they belong to features that don't
+exist yet — shows, music videos, running your own label).

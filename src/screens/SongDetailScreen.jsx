@@ -4,6 +4,7 @@ import { Bolt } from '../ui/icons.jsx'
 import { CONFIG } from '../game/config.js'
 import { polishCost, qualityLabel, qualityColor } from '../game/quality.js'
 import { getGenre } from '../game/genres.js'
+import { getAlbum } from '../game/albums.js'
 import { getMarketing, BUYABLE_TIERS } from '../game/marketing.js'
 import { compact, moneyExact } from '../game/format.js'
 import { SPRING, SPRING_POP, tap, tapSmall } from '../ui/motion.js'
@@ -13,6 +14,7 @@ export default function SongDetailScreen({ game, song, onBack, onPolish, onRelea
   if (!song) return null
 
   const genre = getGenre(song.genreId)
+  const album = getAlbum(game, song.albumId)
   const marketing = getMarketing(song.marketingTier)
   const canRelease = !song.released && game.player.energy >= CONFIG.ENERGY_PER_RELEASE
 
@@ -49,15 +51,28 @@ export default function SongDetailScreen({ game, song, onBack, onPolish, onRelea
       />
 
       <div className="detail-grid">
-        <Cell label="ALBUM" value="Single" />
+        <Cell label="ALBUM" value={album ? album.title : 'Single'} highlight={Boolean(album)} />
         <Cell label="TOTAL STREAMS" value={compact(song.totalStreams)} highlight />
-        <Cell label="FEATURING" value="None" dim />
+        <Cell
+          label="FEATURING"
+          value={song.featuring ? song.featuring.name : 'None'}
+          highlight={Boolean(song.featuring)}
+          dim={!song.featuring}
+        />
         <Cell label="MARKETING" value={marketing.name} highlight={marketing.id !== 'none'} />
         <Cell label="GENRE" value={genre.name} />
         <Cell label="MUSIC VIDEO" value="–" dim />
       </div>
 
-      {song.released ? (
+      {!song.released && album ? (
+        <>
+          <div className="detail-btn disabled">ON "{album.title.toUpperCase()}"</div>
+          <div className="cash-note" style={{ lineHeight: 1.6 }}>
+            This track goes out when the album does. Release it from the album's
+            page.
+          </div>
+        </>
+      ) : song.released ? (
         <>
           <div className="detail-btn disabled">RELEASED</div>
           <div className="cash-note">

@@ -17,6 +17,7 @@
 
 import { CONFIG } from './config.js'
 import { viralityBonus } from './lifestyle.js'
+import { getArtist } from './artists.js'
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n))
@@ -52,10 +53,19 @@ export function expectedQuality(player, producer, writer, studio) {
 }
 
 // The real roll, with luck. This is the song's starting PRODUCTION RATING.
-export function rollQuality(player, producer, writer, studio, rng = Math.random) {
+// A featured artist lends their rating to the track.
+export function rollQuality(player, producer, writer, studio, rng = Math.random, featureId = null) {
   const expected = expectedQuality(player, producer, writer, studio)
   const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
-  return clamp(Math.round(expected * luck), 1, CONFIG.MAX_QUALITY)
+  let score = expected * luck
+
+  const guest = getArtist(featureId)
+  if (guest) {
+    const w = CONFIG.FEATURE_PRODUCTION_WEIGHT
+    score = score * (1 - w) + guest.rating * w
+  }
+
+  return clamp(Math.round(score), 1, CONFIG.MAX_QUALITY)
 }
 
 // Turns a 0-100 quality into the word shown next to the song.
@@ -79,12 +89,20 @@ export function qualityColor(q) {
 // A song's starting VIRALITY, rolled off your Virality trait. This is separate
 // from the production rating: it's how far the song travels, not how good it
 // sounds. You can push it up afterwards by polishing the song.
-export function rollVirality(player, rng = Math.random) {
+export function rollVirality(player, rng = Math.random, featureId = null) {
   const base = player.traits.virality
   const luck = CONFIG.LUCK_MIN + rng() * (CONFIG.LUCK_MAX - CONFIG.LUCK_MIN)
   // Your FASHION tier adds a flat bonus on top — "your style gives virality
   // bonuses".
-  const styled = base * luck + viralityBonus(player.lifestyle)
+  let styled = base * luck + viralityBonus(player.lifestyle)
+
+  // A guest brings their own audience with them.
+  const guest = getArtist(featureId)
+  if (guest) {
+    const w = CONFIG.FEATURE_VIRALITY_WEIGHT
+    styled = styled * (1 - w) + guest.virality * w
+  }
+
   return clamp(Math.round(styled * 10) / 10, 1, CONFIG.MAX_QUALITY)
 }
 

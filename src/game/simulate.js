@@ -11,6 +11,7 @@ import { getGenre, HOME_GENRE_BONUS } from './genres.js'
 import { PLATFORM_SPLIT } from './config.js'
 import { getMarketing } from './marketing.js'
 import { weeklyExpenses, downgradeOnce, maxEnergyFor } from './lifestyle.js'
+import { albumBonus } from './albums.js'
 
 // How many streams a song pulls in its very first week.
 export function firstWeekStreams(song, player) {
@@ -41,6 +42,9 @@ export function firstWeekStreams(song, player) {
 
   // The paid campaign bought on SET MARKETING before release.
   streams *= getMarketing(song.marketingTier).multiplier
+
+  // Tracks on an album pull each other up.
+  streams *= 1 + albumBonus(song.albumTrackCount || 0)
 
   return Math.max(1, Math.round(streams))
 }
@@ -76,11 +80,18 @@ export function advanceWeek(game) {
   let weekStreams = 0
   const perSong = []
 
+  // How many tracks each album carries, so a song knows its own record's size.
+  const trackCounts = {}
+  for (const s of game.songs) {
+    if (s.albumId) trackCounts[s.albumId] = (trackCounts[s.albumId] || 0) + 1
+  }
+
   const songs = game.songs.map((song) => {
     if (!song.released) return song
 
     const weeksOut = game.week - song.releasedOnWeek
-    const gained = weeklyStreams(song, player, weeksOut)
+    const withAlbum = { ...song, albumTrackCount: trackCounts[song.albumId] || 0 }
+    const gained = weeklyStreams(withAlbum, player, weeksOut)
 
     // Once a song barely gets played, it stops earning.
     if (gained < CONFIG.STREAM_FLOOR) {
